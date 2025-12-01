@@ -8,6 +8,7 @@ const clienteRoutes = require('./routes/clientes.routes');
 const quartoRoutes = require('./routes/quartos.routes'); // NOVA ROTA
 const reservaRoutes = require('./routes/reservas.routes'); // NOVA ROTA
 
+const quartoController = require('./controllers/QuartoController');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -32,6 +33,21 @@ sequelize.sync({ alter: true })
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
       console.log(`🔗 Banco de dados sincronizado com sucesso.`);
+      
+      // -----------------------------------------------------------------
+      // ✅ LÓGICA DE AGENDAMENTO DE STATUS
+      // -----------------------------------------------------------------
+      const SYNC_INTERVAL_MS = 10 * 60 * 1000; // 30 minutos em milissegundos
+      
+      // 1. Executa a sincronização imediatamente no início
+      quartoController.runStatusSync();
+
+      // 2. Agenda a execução periódica
+      setInterval(() => {
+        quartoController.runStatusSync();
+      }, SYNC_INTERVAL_MS);
+      
+      console.log(`🕒 Sincronização de status agendada a cada 10 minutos.`); 
     });
   })
   .catch(err => {

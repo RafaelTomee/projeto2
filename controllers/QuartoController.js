@@ -140,32 +140,62 @@ exports.remove = async (req, res) => {
 
 // NOVO: Função para sincronizar o status estático no DB com o status dinâmico de hoje
 
+// controllers/QuartoController.js (após exports.remove)
 
-        exports.syncAllStatuses = async (req, res) => {
+// NOVO: Função Core de Sincronização (Sem depender de req/res)
+const runStatusSync = async () => {
     try {
         const quartos = await Quarto.findAll({ 
-            attributes: ['id', 'numero'] // Adicionado 'numero' para facilitar o log
+            attributes: ['id', 'numero'] 
         });
+
+        console.log(`\n[SYNC] Iniciando sincronização de status para ${quartos.length} quartos...`);
 
         await Promise.all(quartos.map(async (quarto) => {
             const statusDinamico = await getDynamicStatus(quarto.id);
             
-            // NOVO LOG PARA DEBUG
-            console.log(`Quarto ${quarto.numero} (ID: ${quarto.id}) -> Status Calculado: ${statusDinamico}`); 
-            // FIM DO NOVO LOG
-
             const quartoAtual = await Quarto.findByPk(quarto.id);
+            
             if (quartoAtual.status !== 'Manutenção' || statusDinamico === 'Manutenção') {
+                 console.log(`[SYNC] Quarto ${quarto.numero} -> Status Calculado: ${statusDinamico}. Atualizando DB.`);
                  await Quarto.update(
                     { status: statusDinamico },
                     { where: { id: quarto.id } }
                 );
+            } else {
+                 console.log(`[SYNC] Quarto ${quarto.numero} -> Status Manutenção. Não atualizando DB.`);
             }
         }));
 
-        return res.send({ message: 'Status de todos os quartos sincronizado com sucesso.' });
+        console.log('[SYNC] Sincronização concluída.');
+        return true;
     } catch (error) {
-        console.error(error);
-        return res.status(500).send({ error: 'Erro ao sincronizar status dos quartos.' });
+        console.error('[SYNC ERROR] Erro ao executar a sincronização:', error);
+        return false;
     }
+};
+
+
+// Handler da Rota Express (Agora apenas chama a função core)
+exports.syncAllStatuses = async (req, res) => {
+    const success = await runStatusSync();
+
+    if (success) {
+        return res.send({ message: 'Status de todos os quartos sincronizado com sucesso.' });
+    }
+    return res.status(500).send({ error: 'Erro ao sincronizar status dos quartos.' });
+};
+
+
+// ----------------------------------------------------------------------------------
+// CORREÇÃO ESSENCIAL: EXPORTAR TODAS AS FUNÇÕES NO FINAL
+// ----------------------------------------------------------------------------------
+module.exports = {
+    create: exports.create,
+    list: exports.list,
+    getOne: exports.getOne,
+    update: exports.update,
+    remove: exports.remove,
+    syncAllStatuses: exports.syncAllStatuses, // Exporta o handler da rota
+    runStatusSync // Exporta a função core para o server.js usar no agendamento
 };
