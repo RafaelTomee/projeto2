@@ -127,37 +127,54 @@
     </div>
 
     <div class="section">
-      <h2>🏨 3. Gerenciamento de Quartos</h2>
+      <h2>🏨 3. Gerenciamento de Quartos (CRUD Completo)</h2>
 
-      <h3>Controle de Disponibilidade (Visualização)</h3>
-      <p>Filtro de Status:</p>
-      <select id="quarto-status-filter">
-        <option value="">Mostrar Todos</option>
-        <option value="Disponível">Disponível</option>
-        <option value="Ocupado">Ocupado</option>
-        <option value="Manutenção">Manutenção</option>
-      </select>
-      <button onclick="listQuartos()">Listar Quartos (GET)</button>
-
-      <hr />
-
-      <h3>Atualizar Status do Quarto</h3>
       <input
         type="number"
         id="quarto-id-input"
-        placeholder="ID do Quarto (Ex: 101)"
+        placeholder="ID (Para Edição/Excluir)"
         value=""
       />
-
-      <p>Novo Status:</p>
+      <input
+        type="text"
+        id="quarto-numero"
+        placeholder="Número (Ex: 101)"
+        value="101"
+      />
+      <select id="quarto-tipo">
+        <option value="Solteiro">Solteiro</option>
+        <option value="Duplo" selected>Duplo</option>
+        <option value="Casal">Casal</option>
+        <option value="Suite">Suíte</option>
+      </select>
+      <input
+        type="number"
+        id="quarto-valor"
+        placeholder="Valor Diária"
+        value="150.00"
+      />
+      <input
+        type="number"
+        id="quarto-capacidade"
+        placeholder="Capacidade"
+        value="2"
+      />
       <select id="quarto-status-edit">
-        <option value="Disponível">Disponível</option>
+        <option value="Disponível" selected>Disponível</option>
         <option value="Ocupado">Ocupado</option>
         <option value="Manutenção">Manutenção</option>
       </select>
+      <br /><br />
 
-      <button onclick="updateQuartoStatus()">Editar Status (PUT /:id)</button>
+      <button onclick="createQuarto()">1. Criar Quarto (POST)</button>
+      <button onclick="listQuartos()">2. Listar Todos (GET)</button>
+      <button onclick="getOneQuarto()">3. Buscar por ID (GET /:id)</button>
+      <button onclick="updateQuarto()">4. Editar por ID (PUT /:id)</button>
+      <button onclick="deleteQuarto()">5. Excluir por ID (DELETE /:id)</button>
 
+      <div class="token-display">
+        ID Quarto Criado/Atualizado: <span id="quarto-id">N/A</span>
+      </div>
       <pre id="quarto-output">Saída da Requisição...</pre>
     </div>
 
@@ -553,9 +570,119 @@
       }
 
       async function listReservas() {
-    // A função fetchProtected deve usar 'reserva-output'
-    await fetchProtected(`${BASE_URL}/reservas`, 'GET');
-}
+        // A função fetchProtected deve usar 'reserva-output'
+        await fetchProtected(`${BASE_URL}/reservas`, "GET");
+      }
+
+      
+      
+      // ... (fetchProtected e login não mudam)
+
+      // ...
+
+      // 2. CRIAR QUARTO (POST /api/quartos)
+      async function createQuarto() {
+        const numero = document.getElementById("quarto-numero").value;
+        const tipo = document.getElementById("quarto-tipo").value;
+        const valorDiaria = document.getElementById("quarto-valor").value;
+        const capacidade = document.getElementById("quarto-capacidade").value;
+        const status = document.getElementById("quarto-status-edit").value;
+
+        const data = await fetchProtected(`${BASE_URL}/quartos`, "POST", {
+          numero: numero,
+          tipo: tipo,
+          valorDiaria: parseFloat(valorDiaria),
+          capacidade: parseInt(capacidade, 10),
+          status: status,
+        });
+
+        if (data && data.id) {
+          QUARTO_ID = data.id;
+          localStorage.setItem("quartoId", QUARTO_ID);
+          document.getElementById("quarto-id").textContent = QUARTO_ID;
+          // Atualiza o ID de input para facilitar o teste de GET/PUT/DELETE
+          document.getElementById("quarto-id-input").value = QUARTO_ID;
+          // Se a seção 4 estiver visível, atualiza o ID lá também
+          document.getElementById("reserva-quartoId").value = QUARTO_ID;
+        }
+      }
+
+      // 3. LISTAR QUARTOS (GET /api/quartos?status=...)
+      async function listQuartos() {
+        // Note que o filtro de status foi removido do HTML atualizado,
+        // mas a função ainda permite o uso se você o adicionar de volta.
+        // Para simplificar, esta versão lista todos.
+        await fetchProtected(`${BASE_URL}/quartos`, "GET");
+      }
+
+      // 4. BUSCAR QUARTO POR ID (GET /api/quartos/:id)
+      async function getOneQuarto() {
+        const targetId = document.getElementById("quarto-id-input").value;
+        if (!targetId) {
+          alert("Digite o ID do quarto no campo ID (Para Edição/Excluir).");
+          return;
+        }
+
+        await fetchProtected(`${BASE_URL}/quartos/${targetId}`, "GET");
+      }
+
+      // 5. ATUALIZAR QUARTO (PUT /api/quartos/:id) - Substitui updateQuartoStatus
+      async function updateQuarto() {
+        const targetId = document.getElementById("quarto-id-input").value;
+        if (!targetId) {
+          alert("Digite o ID do quarto que você quer editar no campo ID.");
+          return;
+        }
+
+        // Pega todos os dados dos inputs
+        const numero = document.getElementById("quarto-numero").value;
+        const tipo = document.getElementById("quarto-tipo").value;
+        const valorDiaria = document.getElementById("quarto-valor").value;
+        const capacidade = document.getElementById("quarto-capacidade").value;
+        const newStatus = document.getElementById("quarto-status-edit").value;
+
+        await fetchProtected(`${BASE_URL}/quartos/${targetId}`, "PUT", {
+          numero: numero,
+          tipo: tipo,
+          valorDiaria: parseFloat(valorDiaria),
+          capacidade: parseInt(capacidade, 10),
+          status: newStatus,
+        });
+
+        // Atualiza o ID criado/atualizado na tela
+        document.getElementById("quarto-id").textContent = targetId;
+      }
+
+      // 6. EXCLUIR QUARTO (DELETE /api/quartos/:id)
+      async function deleteQuarto() {
+        const targetId = document.getElementById("quarto-id-input").value;
+        if (!targetId) {
+          alert("Digite o ID do quarto que você quer excluir no campo ID.");
+          return;
+        }
+
+        const outputElement = document.getElementById("quarto-output");
+        outputElement.textContent = "Carregando...";
+
+        try {
+          const url = `${BASE_URL}/quartos/${targetId}`;
+          const response = await fetch(url, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${CURRENT_TOKEN}` },
+          });
+
+          if (response.status === 204) {
+            outputElement.textContent = `Status: 204 No Content\n\nQuarto ID ${targetId} excluído com sucesso.`;
+          } else {
+            // Usa fetchProtected para tratar a resposta de erro
+            await fetchProtected(url, "DELETE");
+          }
+        } catch (error) {
+          outputElement.textContent = "ERRO DE REDE/SERVIDOR: " + error.message;
+        }
+      }
+      // Remove a função antiga se ela ainda existir
+      // function updateQuartoStatus() { ... }
     </script>
   </body>
 </html>

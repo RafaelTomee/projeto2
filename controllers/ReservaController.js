@@ -7,19 +7,17 @@ const { parse, differenceInDays } = require('date-fns');
 
 // 1. Verifica se o quarto está disponível no período
 const checkAvailability = async (quartoId, checkIn, checkOut, excludeReservaId = null) => {
-  // As datas de entrada/saída são tratadas como DATEONLY no banco, 
-  // mas o parse garante que as comparações sejam corretas, ignorando o tempo.
-  const checkInDate = parse(checkIn, 'yyyy-MM-dd', new Date());
-  const checkOutDate = parse(checkOut, 'yyyy-MM-dd', new Date());
-
   const queryOptions = {
     where: {
       quartoId: quartoId,
       status: { [Op.ne]: 'Cancelada' }, // Ignora reservas canceladas
       [Op.or]: [
-        // Conflito: O período da nova reserva se sobrepõe a uma existente
-        // A nova reserva começa antes do fim da existente E termina depois do começo da existente.
-        { dataCheckIn: { [Op.lt]: checkOutDate }, dataCheckOut: { [Op.gt]: checkInDate } },
+        // Nova reserva começa durante uma existente
+        { dataCheckIn: { [Op.lt]: checkOut }, dataCheckOut: { [Op.gt]: checkIn } },
+        // Nova reserva engloba uma existente
+        { dataCheckIn: { [Op.gte]: checkIn, [Op.lt]: checkOut } },
+        // Nova reserva está contida em uma existente
+        { dataCheckOut: { [Op.lt]: checkOut, [Op.gt]: checkIn } },
       ],
     },
   };
@@ -28,128 +26,233 @@ const checkAvailability = async (quartoId, checkIn, checkOut, excludeReservaId =
     queryOptions.where.id = { [Op.ne]: excludeReservaId };
   }
 
-  // Se houver conflito, o count será > 0
   const conflictingReservations = await Reserva.count(queryOptions);
   return conflictingReservations === 0;
 };
 
 // 2. Calcula o valor total e diárias
-const calculateTotalValue = (checkIn, checkOut, valorDiaria) => {
-    const checkInDate = parse(checkIn, 'yyyy-MM-dd', new Date());
-    const checkOutDate = parse(checkOut, 'yyyy-MM-dd', new Date());
-    
-    // Calcula a diferença em dias (número de diárias)
-    const totalDays = differenceInDays(checkOutDate, checkInDate);
-    
-    if (totalDays <= 0) {
-        throw new Error("A data de check-out deve ser posterior à data de check-in.");
-    }
+const calculateTotalValue = (checkInDate, checkOutDate, valorDiaria) => {
+  const startDate = parse(checkInDate, 'yyyy-MM-dd', new Date());
+  const endDate = parse(checkOutDate, 'yyyy-MM-dd', new Date());
 
-    // valorDiaria é uma string, precisamos converter para float para o cálculo
-    const valorTotal = totalDays * parseFloat(valorDiaria);
-    
-    return { 
-        totalDiarias: totalDays, 
-        valorTotal: valorTotal.toFixed(2) // Formata para 2 casas decimais
-    };
+  // differenceInDays retorna a diferença, se for 1 dia (checkin 01/01, checkout 02/01), o resultado é 1 diária.
+  const days = differenceInDays(endDate, startDate);
+
+  if (days <= 0) {
+    throw new Error('A data de Check-Out deve ser posterior à data de Check-In.');
+  }
+
+  const valorTotal = days * parseFloat(valorDiaria);
+  return { days, valorTotal: valorTotal.toFixed(2) };
 };
 
-// POST /api/reservas (CRIAR)
+// --- Funções CRUD ---
+
+// POST /api/reservas
 exports.create = async (req, res) => {
-    const { clienteId, quartoId, dataCheckIn, dataCheckOut } = req.body;
+  const { clienteId, quartoId, dataCheckIn, dataCheckOut } = req.body;
 
-    if (!dataCheckIn || !dataCheckOut || dataCheckIn >= dataCheckOut) {
-        return res.status(400).send({ error: 'Datas de check-in/check-out inválidas. O check-out deve ser posterior ao check-in.' });
+  try {
+    if (dataCheckIn >= dataCheckOut) {
+      return res.status(400).send({ error: 'Data de Check-Out deve ser posterior à de Check-In.' });
     }
 
-    try {
-        const quarto = await Quarto.findByPk(quartoId);
-        const cliente = await Cliente.findByPk(clienteId);
-
-        if (!quarto || !cliente) {
-            return res.status(404).send({ error: 'Quarto ou Cliente não encontrado. Verifique os IDs.' });
-        }
-
-        // 3. Checar Disponibilidade (Verifica conflito com outras reservas)
-        const isAvailable = await checkAvailability(quartoId, dataCheckIn, dataCheckOut);
-        
-        if (!isAvailable) {
-            return res.status(409).send({ error: `O Quarto ${quarto.numero} não está disponível no período solicitado.` });
-        }
-        
-        // Regra de Negócio: Quarto não pode ser reservado se estiver em Manutenção
-        if (quarto.status === 'Manutenção') {
-            return res.status(409).send({ error: `Quarto ${quarto.numero} está em Manutenção e não pode ser reservado.` });
-        }
-
-        // 4. Calcular Valor Total
-        const { valorTotal, totalDiarias } = calculateTotalValue(dataCheckIn, dataCheckOut, quarto.valorDiaria);
-        
-        // 5. Criar Reserva
-        const reserva = await Reserva.create({
-            clienteId,
-            quartoId,
-            dataCheckIn,
-            dataCheckOut,
-            valorTotal,
-            status: 'Confirmada',
-        });
-
-        // 6. Retornar a reserva criada com as informações associadas
-        const newReserva = await Reserva.findByPk(reserva.id, {
-            include: [{ model: Cliente, as: 'cliente' }, { model: Quarto, as: 'quarto' }]
-        });
-        
-        // Nota: O status do Quarto só é atualizado para 'Ocupado' no momento do Check-In,
-        // mas é checado pela função checkAvailability para garantir que não haja sobreposição.
-
-        return res.status(201).send({ 
-            message: `Reserva criada com sucesso! ${totalDiarias} diárias por R$ ${valorTotal}.`,
-            reserva: newReserva 
-        });
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ error: error.message || 'Erro ao criar a reserva.' });
+    const quarto = await Quarto.findByPk(quartoId);
+    if (!quarto) {
+      return res.status(404).send({ error: 'Quarto não encontrado.' });
     }
+    
+    // 1. Verificar Disponibilidade
+    const isAvailable = await checkAvailability(quartoId, dataCheckIn, dataCheckOut);
+    if (!isAvailable) {
+      return res.status(409).send({ error: 'O quarto está ocupado neste período.' });
+    }
+    
+    // 2. Calcular Valor Total
+    const { valorTotal } = calculateTotalValue(dataCheckIn, dataCheckOut, quarto.valorDiaria);
+
+    // 3. Criar Reserva
+    const reserva = await Reserva.create({
+      clienteId,
+      quartoId,
+      dataCheckIn,
+      dataCheckOut,
+      valorTotal,
+      status: 'Confirmada',
+    });
+
+    // NOVO: 4. Atualizar o status do Quarto para 'Ocupado'
+    // await Quarto.update(
+    //     { status: 'Ocupado' }, 
+    //     { where: { id: quartoId } }
+    // );
+
+    return res.status(201).send(reserva);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ error: error.message || 'Erro ao criar reserva.' });
+  }
 };
 
-// GET /api/reservas (LISTAR)
+// GET /api/reservas
 exports.list = async (req, res) => {
-    try {
-        const reservas = await Reserva.findAll({
-            // Inclui Cliente e Quarto associados para ter detalhes completos
-            include: [
-                { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'cpf'] },
-                { model: Quarto, as: 'quarto', attributes: ['id', 'numero', 'tipo', 'valorDiaria'] }
-            ],
-            // Exclui as chaves estrangeiras, mas não as informações associadas
-            attributes: { exclude: ['createdAt', 'updatedAt', 'clienteId', 'quartoId'] } 
-        });
-        return res.send(reservas);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ error: 'Erro ao buscar reservas.' });
-    }
+  try {
+    const reservas = await Reserva.findAll({
+      include: [
+        { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'cpf'] },
+        { model: Quarto, as: 'quarto', attributes: ['id', 'numero', 'tipo', 'valorDiaria'] }
+      ]
+    });
+    return res.send(reservas);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: 'Erro ao buscar reservas.' });
+  }
 };
 
-// DELETE /api/reservas/:id (REMOVER)
+// NOVO: GET /api/reservas/:id (Adicionado para corrigir o erro da rota)
+exports.getOne = async (req, res) => {
+  try {
+    const reserva = await Reserva.findByPk(req.params.id, {
+      include: [
+        { model: Cliente, as: 'cliente', attributes: ['id', 'nome', 'cpf'] },
+        { model: Quarto, as: 'quarto', attributes: ['id', 'numero', 'tipo', 'valorDiaria'] }
+      ]
+    });
+
+    if (!reserva) {
+      return res.status(404).send({ error: 'Reserva não encontrada.' });
+    }
+
+    return res.send(reserva);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: 'Erro ao buscar a reserva.' });
+  }
+};
+
+// PUT /api/reservas/:id
+exports.update = async (req, res) => {
+  const reservaId = req.params.id;
+  const { clienteId, quartoId, dataCheckIn, dataCheckOut, status } = req.body;
+
+  try {
+    const existingReserva = await Reserva.findByPk(reservaId);
+    if (!existingReserva) {
+      return res.status(404).send({ error: 'Reserva não encontrada.' });
+    }
+
+    const quarto = await Quarto.findByPk(quartoId || existingReserva.quartoId);
+    if (!quarto) {
+        return res.status(404).send({ error: 'Quarto não encontrado.' });
+    }
+
+    // 1. Verificar Disponibilidade apenas se datas ou quarto mudarem
+    const newCheckIn = dataCheckIn || existingReserva.dataCheckIn;
+    const newCheckOut = dataCheckOut || existingReserva.dataCheckOut;
+    const newQuartoId = quartoId || existingReserva.quartoId;
+    
+    if (newCheckIn >= newCheckOut) {
+      return res.status(400).send({ error: 'Data de Check-Out deve ser posterior à de Check-In.' });
+    }
+    
+    const isAvailable = await checkAvailability(newQuartoId, newCheckIn, newCheckOut, reservaId);
+    if (!isAvailable) {
+      return res.status(409).send({ error: 'O quarto está ocupado neste novo período.' });
+    }
+
+    // 2. Recalcular Valor Total (se datas ou quarto mudaram)
+    const { valorTotal } = calculateTotalValue(newCheckIn, newCheckOut, quarto.valorDiaria);
+    
+    // 3. Atualizar Reserva
+    const [updated] = await Reserva.update({
+        clienteId: clienteId || existingReserva.clienteId,
+        quartoId: newQuartoId,
+        dataCheckIn: newCheckIn,
+        dataCheckOut: newCheckOut,
+        status: status || existingReserva.status,
+        valorTotal: valorTotal
+    }, {
+      where: { id: reservaId }
+    });
+
+    if (updated) {
+      const updatedReserva = await Reserva.findByPk(reservaId, {
+        include: [{ model: Cliente, as: 'cliente' }, { model: Quarto, as: 'quarto' }]
+      });
+
+      // NOVO: Lógica de atualização de status do Quarto
+      if (updatedReserva.status === 'Cancelada' || updatedReserva.status === 'Check-Out') {
+          // Verifica se há outras reservas ativas (Confirmada ou Check-In) para este quarto
+          const hasActiveReservations = await Reserva.count({
+              where: {
+                  quartoId: updatedReserva.quartoId,
+                  id: { [Op.ne]: reservaId }, // Exclui a reserva que acabou de ser cancelada/finalizada
+                  status: { [Op.in]: ['Confirmada', 'Check-In'] }
+              }
+          });
+
+          if (hasActiveReservations === 0) {
+              // Se não houver outras reservas ativas, o quarto volta a ficar Disponível
+              await Quarto.update(
+                  { status: 'Disponível' },
+                  { where: { id: updatedReserva.quartoId } }
+              );
+          }
+      } else if (updatedReserva.status === 'Check-In' || updatedReserva.status === 'Confirmada') {
+          // Se a reserva foi atualizada para Confirmada ou Check-In (e o status foi modificado para outro valor), 
+          // garantimos que o quarto está como Ocupado.
+           await Quarto.update(
+              { status: 'Ocupado' },
+              { where: { id: updatedReserva.quartoId } }
+          );
+      }
+      
+      return res.status(200).send(updatedReserva);
+    }
+    
+    return res.status(500).send({ error: 'Falha na atualização da reserva.' });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ error: error.message || 'Erro ao atualizar reserva.' });
+  }
+};
+
+// DELETE /api/reservas/:id
 exports.remove = async (req, res) => {
-    try {
-        const deleted = await Reserva.destroy({
-            where: { id: req.params.id }
+  try {
+    const reservaId = req.params.id;
+    const existingReserva = await Reserva.findByPk(reservaId);
+
+    const deleted = await Reserva.destroy({
+      where: { id: reservaId }
+    });
+
+    if (deleted && existingReserva) {
+        // NOVO: Lógica após exclusão para liberar o quarto
+        // Verifica se há outras reservas ativas (Confirmada ou Check-In) para este quarto
+        const hasActiveReservations = await Reserva.count({
+            where: {
+                quartoId: existingReserva.quartoId,
+                status: { [Op.in]: ['Confirmada', 'Check-In'] }
+            }
         });
 
-        if (deleted) {
-            return res.status(204).send();
+        if (hasActiveReservations === 0) {
+            // Se não houver outras reservas ativas, o quarto volta a ficar Disponível
+            await Quarto.update(
+                { status: 'Disponível' },
+                { where: { id: existingReserva.quartoId } }
+            );
         }
-        
-        return res.status(404).send({ error: 'Reserva não encontrada.' });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ error: 'Erro ao deletar a reserva.' });
+
+      return res.status(204).send();
     }
+    
+    return res.status(404).send({ error: 'Reserva não encontrada.' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: 'Erro ao deletar a reserva.' });
+  }
 };
-// Funções de atualização (PUT / GETONE) devem ser implementadas se necessário
-exports.getOne = async (req, res) => { return res.status(501).send({ error: 'Busca por ID de Reserva não implementada.' }); };
-exports.update = async (req, res) => { return res.status(501).send({ error: 'Atualização de Reserva não implementada.' }); };
