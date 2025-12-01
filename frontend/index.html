@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Teste de API - Gerenciamento de Hotel</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      h2 {
+        border-bottom: 2px solid #ccc;
+        padding-bottom: 5px;
+      }
+      .section {
+        background-color: #fff;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      input[type="text"],
+      input[type="password"],
+      input[type="number"],
+      input[type="date"] {
+        padding: 8px;
+        margin-right: 10px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+      }
+      button {
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      pre {
+        background-color: #eee;
+        padding: 10px;
+        border-radius: 3px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .token-display {
+        font-size: 14px;
+        font-weight: bold;
+        color: #28a745;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>API Hotel - Teste de Funcionalidades</h1>
+
+    <div class="section">
+      <h2>🔒 1. Autenticação (Login)</h2>
+      <input
+        type="text"
+        id="email"
+        placeholder="Email (admin@hotel.com)"
+        value="admin@hotel.com"
+      />
+      <input
+        type="password"
+        id="password"
+        placeholder="Senha (senhaforte123)"
+        value="senhaforte123"
+      />
+      <button onclick="login()">Login e Obter Token</button>
+      <div class="token-display">
+        Token JWT: <span id="current-token">N/A</span>
+      </div>
+      <pre id="auth-output">Saída da Requisição...</pre>
+    </div>
+
+    <div class="section">
+      <h2>👨 2. Clientes (CRUD Completo)</h2>
+      <input
+        type="number"
+        id="cliente-id-input"
+        placeholder="ID (Para Edição/Excluir)"
+        value=""
+      />
+
+      <input
+        type="text"
+        id="cliente-nome"
+        placeholder="Nome"
+        value="Hóspede de Teste"
+      />
+      <input
+        type="text"
+        id="cliente-cpf"
+        placeholder="CPF"
+        value="111.111.111-11"
+      />
+      <input
+        type="text"
+        id="cliente-telefone"
+        placeholder="Telefone"
+        value="999999999"
+      />
+      <input
+        type="text"
+        id="cliente-email"
+        placeholder="Email"
+        value="hospede_novo@hotel.com"
+      />
+      <br /><br />
+
+      <button onclick="createCliente()">1. Criar Cliente (POST)</button>
+      <button onclick="listClientes()">2. Listar Todos (GET)</button>
+      <button onclick="getOneCliente()">3. Buscar por ID (GET /:id)</button>
+      <button onclick="updateCliente()">4. Editar por ID (PUT /:id)</button>
+      <button onclick="deleteCliente()">5. Excluir por ID (DELETE /:id)</button>
+
+      <div class="token-display">
+        ID Cliente Criado/Atualizado: <span id="cliente-id">N/A</span>
+      </div>
+      <pre id="cliente-output">Saída da Requisição...</pre>
+    </div>
+
+    <div class="section">
+      <h2>🏨 3. Gerenciamento de Quartos</h2>
+
+      <h3>Controle de Disponibilidade (Visualização)</h3>
+      <p>Filtro de Status:</p>
+      <select id="quarto-status-filter">
+        <option value="">Mostrar Todos</option>
+        <option value="Disponível">Disponível</option>
+        <option value="Ocupado">Ocupado</option>
+        <option value="Manutenção">Manutenção</option>
+      </select>
+      <button onclick="listQuartos()">Listar Quartos (GET)</button>
+
+      <hr />
+
+      <h3>Atualizar Status do Quarto</h3>
+      <input
+        type="number"
+        id="quarto-id-input"
+        placeholder="ID do Quarto (Ex: 101)"
+        value=""
+      />
+
+      <p>Novo Status:</p>
+      <select id="quarto-status-edit">
+        <option value="Disponível">Disponível</option>
+        <option value="Ocupado">Ocupado</option>
+        <option value="Manutenção">Manutenção</option>
+      </select>
+
+      <button onclick="updateQuartoStatus()">Editar Status (PUT /:id)</button>
+
+      <pre id="quarto-output">Saída da Requisição...</pre>
+    </div>
+
+    <div class="section">
+      <h2>📅 4. Criar e Gerenciar Reservas (POST/GET)</h2>
+
+      <h3>Fazer Nova Reserva (POST /api/reservas)</h3>
+      <input
+        type="number"
+        id="reserva-clienteId"
+        placeholder="ID do Cliente (Ex: 1)"
+        value="15"
+      />
+      <input
+        type="number"
+        id="reserva-quartoId"
+        placeholder="ID do Quarto (Ex: 1)"
+        value="10"
+      />
+      <label for="reserva-checkIn">Check-In:</label>
+      <input type="date" id="reserva-checkIn" value="2025-12-01" />
+
+      <label for="reserva-checkOut">Check-Out:</label>
+      <input type="date" id="reserva-checkOut" value="2025-12-04" />
+      <br /><br />
+
+      <button onclick="createReserva()">Criar Reserva</button>
+      <button onclick="listReservas()">Listar Todas as Reservas</button>
+
+      <pre id="reserva-output">Saída da Requisição...</pre>
+    </div>
+
+    <script>
+      const BASE_URL = "http://localhost:3000/api";
+      let CURRENT_TOKEN = localStorage.getItem("jwtToken") || "";
+      let CLIENTE_ID = localStorage.getItem("clienteId") || "";
+      let QUARTO_ID = localStorage.getItem("quartoId") || "";
+
+      document.getElementById("current-token").textContent =
+        CURRENT_TOKEN || "N/A";
+      document.getElementById("cliente-id").textContent = CLIENTE_ID || "N/A";
+      document.getElementById("quarto-id").textContent = QUARTO_ID || "N/A";
+
+      // Helper para requisições protegidas
+      async function fetchProtected(url, method, body = null) {
+        // 1. Determina qual elemento de saída (output) usar baseado na URL
+        let outputElementId;
+        if (url.includes("/clientes")) {
+          outputElementId = "cliente-output";
+        } else if (url.includes("/quartos")) {
+          outputElementId = "quarto-output";
+        } else if (url.includes("/reservas")) {
+          outputElementId = "reserva-output";
+        } else if (url.includes("/auth")) {
+          outputElementId = "auth-output";
+        } else {
+          outputElementId = "auth-output"; // Fallback
+        }
+
+        const outputElement = document.getElementById(outputElementId);
+        if (!outputElement) {
+          console.error("Elemento de saída não encontrado:", outputElementId);
+          return;
+        }
+
+        outputElement.textContent = "Carregando...";
+
+        if (
+          !CURRENT_TOKEN &&
+          !url.includes("/auth/register") &&
+          !url.includes("/auth/login")
+        ) {
+          outputElement.textContent =
+            "ERRO: Faça o login primeiro para obter o token.";
+          return;
+        }
+
+        // 2. Monta as opções da requisição
+        const options = {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+            // Inclui o token apenas se ele existir e a rota não for de autenticação
+            ...(CURRENT_TOKEN &&
+              !url.includes("/auth") && {
+                Authorization: `Bearer ${CURRENT_TOKEN}`,
+              }),
+          },
+          body: body ? JSON.stringify(body) : null,
+        };
+
+        // 3. Executa a requisição
+        try {
+          const response = await fetch(url, options);
+
+          // Requisição DELETE bem-sucedida (Status 204 No Content) não tem corpo JSON
+          if (response.status === 204) {
+            outputElement.textContent = `Status: 204 No Content\n\nOperação de exclusão bem-sucedida.`;
+            return;
+          }
+
+          // Pega o JSON da resposta (para todos os outros Status)
+          const data = await response.json();
+
+          // 4. Exibe a saída
+          outputElement.textContent =
+            `Status: ${response.status}\n\n` + JSON.stringify(data, null, 2);
+
+          // Retorna os dados para que as funções chamadoras possam usá-los (ex: para pegar o ID)
+          return data;
+        } catch (error) {
+          // Erro de rede ou JSON inválido
+          outputElement.textContent = "ERRO DE REDE/SERVIDOR: " + error.message;
+        }
+      }
+
+      // 1. LOGIN
+      async function login() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const outputElement = document.getElementById("auth-output");
+
+        try {
+          const response = await fetch(`${BASE_URL}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await response.json();
+          outputElement.textContent =
+            `Status: ${response.status}\n\n` + JSON.stringify(data, null, 2);
+
+          if (response.ok && data.token) {
+            CURRENT_TOKEN = data.token;
+            localStorage.setItem("jwtToken", CURRENT_TOKEN);
+            document.getElementById("current-token").textContent =
+              CURRENT_TOKEN;
+            alert("Login bem-sucedido! Token salvo.");
+          }
+        } catch (error) {
+          outputElement.textContent = "ERRO: " + error.message;
+        }
+      }
+
+      // 2. CRIAR CLIENTE
+      async function createCliente() {
+        // Pega os novos valores dos campos:
+        const nome = document.getElementById("cliente-nome").value;
+        const cpf = document.getElementById("cliente-cpf").value;
+        const telefone = document.getElementById("cliente-telefone").value; // <--- NOVO
+        const email = document.getElementById("cliente-email").value; // <--- NOVO
+
+        const outputElement = document.getElementById("cliente-output");
+
+        const data = await fetchProtected(`${BASE_URL}/clientes`, "POST", {
+          nome: nome,
+          cpf: cpf,
+          telefone: telefone,
+          email: email,
+        });
+
+        if (data && data.id) {
+          CLIENTE_ID = data.id;
+          localStorage.setItem("clienteId", CLIENTE_ID);
+          document.getElementById("cliente-id").textContent = CLIENTE_ID;
+
+          // Se a seção 4 estiver visível, atualiza o ID lá também
+          document.getElementById("reserva-cliente-id").value = CLIENTE_ID;
+        }
+      }
+
+      // 3. CRIAR QUARTO
+      async function createQuarto() {
+        const numero = document.getElementById("quarto-numero").value;
+        const valorDiaria = document.getElementById("quarto-valor").value;
+
+        const data = await fetchProtected(`${BASE_URL}/quartos`, "POST", {
+          numero: numero,
+          tipo: "Duplo", // Hardcoded para simplificar
+          valorDiaria: parseFloat(valorDiaria),
+          capacidade: 2,
+        });
+
+        if (data && data.id) {
+          QUARTO_ID = data.id;
+          localStorage.setItem("quartoId", QUARTO_ID);
+          document.getElementById("quarto-id").textContent = QUARTO_ID;
+        }
+      }
+
+      // 4. CRIAR RESERVA
+      // 5. CRIAR RESERVA (POST /api/reservas)
+      async function createReserva() {
+        // 1. Coleta e converte os dados imediatamente para garantir que são números inteiros
+        const clienteId = parseInt(
+          document.getElementById("reserva-clienteId").value,
+          10
+        );
+        const quartoId = parseInt(
+          document.getElementById("reserva-quartoId").value,
+          10
+        );
+        const dataCheckIn = document.getElementById("reserva-checkIn").value;
+        const dataCheckOut = document.getElementById("reserva-checkOut").value;
+
+        // 2. Validação: Checa se os IDs são números válidos E se as datas existem
+        if (
+          isNaN(clienteId) ||
+          isNaN(quartoId) ||
+          !dataCheckIn ||
+          !dataCheckOut
+        ) {
+          // Mudei a mensagem para ser mais clara sobre a falha no front-end
+          alert(
+            "ERRO: Por favor, preencha todos os campos, garantindo que os IDs são números válidos."
+          );
+          return;
+        }
+
+        // 3. Monta o corpo da requisição (os IDs já são números aqui)
+        const data = {
+          clienteId: clienteId,
+          quartoId: quartoId,
+          dataCheckIn: dataCheckIn,
+          dataCheckOut: dataCheckOut,
+        };
+
+        // 4. Envia a requisição
+        await fetchProtected(`${BASE_URL}/reservas`, "POST", data);
+        // Nota: O terceiro argumento não é necessário na sua fetchProtected, mas o uso dele não prejudica.
+      }
+
+      // ... (depois de function createCliente() { ... })
+
+      // 2. LISTAR CLIENTES
+      async function listClientes() {
+        await fetchProtected(`${BASE_URL}/clientes`, "GET");
+        // A saída (lista de clientes) aparecerá em <pre id="cliente-output">
+      }
+
+      // 3. EDITAR CLIENTE (PUT /api/clientes/:id)
+      async function updateCliente() {
+        if (!CLIENTE_ID) {
+          alert("Crie o Cliente primeiro para obter o ID.");
+          return;
+        }
+        const newEmail = document.getElementById("cliente-email-edit").value;
+
+        await fetchProtected(`${BASE_URL}/clientes/${CLIENTE_ID}`, "PUT", {
+          email: newEmail,
+          telefone: "888888888", // Novo telefone de teste
+        });
+
+        // A saída (cliente atualizado) aparecerá em <pre id="cliente-output">
+      }
+
+      // 4. EXCLUIR CLIENTE (DELETE /api/clientes/:id)
+      async function deleteCliente() {
+        if (!CLIENTE_ID) {
+          alert("Crie o Cliente primeiro para obter o ID.");
+          return;
+        }
+
+        const outputElement = document.getElementById("cliente-output");
+        outputElement.textContent = "Carregando...";
+
+        // O status 204 (No Content) não retorna JSON, então tratamos a resposta de forma diferente
+        try {
+          const url = `${BASE_URL}/clientes/${CLIENTE_ID}`;
+          const response = await fetch(url, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${CURRENT_TOKEN}` },
+          });
+
+          if (response.status === 204) {
+            outputElement.textContent = `Status: 204 No Content\n\nCliente ID ${CLIENTE_ID} excluído com sucesso.`;
+            CLIENTE_ID = "";
+            localStorage.removeItem("clienteId");
+            document.getElementById("cliente-id").textContent = "N/A";
+          } else {
+            const data = await response.json();
+            outputElement.textContent =
+              `Status: ${response.status}\n\n` + JSON.stringify(data, null, 2);
+          }
+        } catch (error) {
+          outputElement.textContent = "ERRO DE REDE/SERVIDOR: " + error.message;
+        }
+      }
+
+      // NOVO: 3. BUSCAR CLIENTE POR ID (GET /api/clientes/:id)
+      async function getOneCliente() {
+        const targetId = document.getElementById("cliente-id-input").value;
+        if (!targetId) {
+          alert("Digite o ID do cliente no campo ID (Para Edição/Excluir).");
+          return;
+        }
+
+        await fetchProtected(`${BASE_URL}/clientes/${targetId}`, "GET");
+      }
+
+      // 4. EDITAR CLIENTE (PUT /api/clientes/:id)
+      async function updateCliente() {
+        // Pega o ID do campo de input (o ID que será editado)
+        const targetId = document.getElementById("cliente-id-input").value;
+        if (!targetId) {
+          alert(
+            "Digite o ID do cliente que você quer editar no campo ID (Para Edição/Excluir)."
+          );
+          return;
+        }
+
+        // Pega os novos dados dos outros campos
+        const nome = document.getElementById("cliente-nome").value;
+        const cpf = document.getElementById("cliente-cpf").value;
+        const telefone = document.getElementById("cliente-telefone").value;
+        const email = document.getElementById("cliente-email").value;
+
+        await fetchProtected(`${BASE_URL}/clientes/${targetId}`, "PUT", {
+          nome: nome,
+          cpf: cpf,
+          telefone: telefone,
+          email: email,
+        });
+
+        // Atualiza o ID criado/atualizado na tela
+        document.getElementById("cliente-id").textContent = targetId;
+      }
+
+      // 5. EXCLUIR CLIENTE (DELETE /api/clientes/:id)
+      async function deleteCliente() {
+        // Pega o ID do campo de input (o ID que será excluído)
+        const targetId = document.getElementById("cliente-id-input").value;
+        if (!targetId) {
+          alert(
+            "Digite o ID do cliente que você quer excluir no campo ID (Para Edição/Excluir)."
+          );
+          return;
+        }
+
+        const outputElement = document.getElementById("cliente-output");
+        outputElement.textContent = "Carregando...";
+
+        try {
+          const url = `${BASE_URL}/clientes/${targetId}`;
+          const response = await fetch(url, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${CURRENT_TOKEN}` },
+          });
+
+          if (response.status === 204) {
+            outputElement.textContent = `Status: 204 No Content\n\nCliente ID ${targetId} excluído com sucesso.`;
+          } else {
+            const data = await response.json();
+            outputElement.textContent =
+              `Status: ${response.status}\n\n` + JSON.stringify(data, null, 2);
+          }
+        } catch (error) {
+          outputElement.textContent = "ERRO DE REDE/SERVIDOR: " + error.message;
+        }
+      }
+      async function listQuartos() {
+        const status = document.getElementById("quarto-status-filter").value;
+
+        let url = `${BASE_URL}/quartos`;
+        if (status) {
+          // Adiciona o filtro de status à URL
+          url += `?status=${status}`;
+        }
+
+        // A função fetchProtected usará 'quarto-output' para exibir
+        await fetchProtected(url, "GET");
+      }
+
+      // 4. EDITAR STATUS DO QUARTO (PUT /api/quartos/:id)
+      async function updateQuartoStatus() {
+        // Pega o ID do quarto que será editado
+        const targetId = document.getElementById("quarto-id-input").value;
+        // Pega o novo valor do status
+        const newStatus = document.getElementById("quarto-status-edit").value;
+
+        if (!targetId) {
+          alert("Digite o ID do quarto que você quer editar no campo ID.");
+          return;
+        }
+
+        // A requisição PUT para /api/quartos/:id
+        await fetchProtected(`${BASE_URL}/quartos/${targetId}`, "PUT", {
+          status: newStatus,
+        });
+
+        // O resultado (o quarto atualizado) será exibido no painel "quarto-output"
+      }
+
+      async function listReservas() {
+    // A função fetchProtected deve usar 'reserva-output'
+    await fetchProtected(`${BASE_URL}/reservas`, 'GET');
+}
+    </script>
+  </body>
+</html>
