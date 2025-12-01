@@ -179,19 +179,19 @@
     </div>
 
     <div class="section">
-      <h2>📅 4. Criar e Gerenciar Reservas (POST/GET)</h2>
+      <h2>📅 4. Criar e Gerenciar Reservas (CRUD Básico)</h2>
 
       <h3>Fazer Nova Reserva (POST /api/reservas)</h3>
       <input
         type="number"
         id="reserva-clienteId"
-        placeholder="ID do Cliente (Ex: 1)"
+        placeholder="ID do Cliente (Ex: 15)"
         value="15"
       />
       <input
         type="number"
         id="reserva-quartoId"
-        placeholder="ID do Quarto (Ex: 1)"
+        placeholder="ID do Quarto (Ex: 10)"
         value="10"
       />
       <label for="reserva-checkIn">Check-In:</label>
@@ -201,9 +201,26 @@
       <input type="date" id="reserva-checkOut" value="2025-12-04" />
       <br /><br />
 
-      <button onclick="createReserva()">Criar Reserva</button>
-      <button onclick="listReservas()">Listar Todas as Reservas</button>
+      <button onclick="createReserva()">1. Criar Reserva (POST)</button>
+      <button onclick="listReservas()">2. Listar Todas (GET)</button>
 
+      <hr style="margin: 15px 0" />
+
+      <h3>Gerenciar por ID (GET/DELETE /api/reservas/:id)</h3>
+      <input
+        type="number"
+        id="reserva-id-input"
+        placeholder="ID da Reserva (Ex: 1)"
+        value=""
+      />
+      <button onclick="getOneReserva()">3. Buscar por ID (GET)</button>
+      <button onclick="deleteReserva()" style="background-color: #dc3545">
+        4. Excluir por ID (DELETE)
+      </button>
+
+      <div class="token-display">
+        ID Reserva Criada: <span id="reserva-id">N/A</span>
+      </div>
       <pre id="reserva-output">Saída da Requisição...</pre>
     </div>
 
@@ -574,8 +591,6 @@
         await fetchProtected(`${BASE_URL}/reservas`, "GET");
       }
 
-      
-      
       // ... (fetchProtected e login não mudam)
 
       // ...
@@ -683,6 +698,99 @@
       }
       // Remove a função antiga se ela ainda existir
       // function updateQuartoStatus() { ... }
+      // Remova a definição anterior de createReserva (a original)
+
+// Variável para armazenar o ID da última reserva criada/manipulada
+let RESERVA_ID = localStorage.getItem("reservaId") || "";
+document.getElementById("reserva-id").textContent = RESERVA_ID || "N/A";
+
+// Função UNIFICADA: 1. Coleta dados, 2. Envia, 3. Salva ID
+async function createReserva() {
+    // 1. Coleta e converte os dados
+    const clienteId = parseInt(
+        document.getElementById("reserva-clienteId").value,
+        10
+    );
+    const quartoId = parseInt(
+        document.getElementById("reserva-quartoId").value,
+        10
+    );
+    const dataCheckIn = document.getElementById("reserva-checkIn").value;
+    const dataCheckOut = document.getElementById("reserva-checkOut").value;
+
+    // 2. Validação: Checa se os IDs são números válidos E se as datas existem
+    if (
+        isNaN(clienteId) ||
+        isNaN(quartoId) ||
+        !dataCheckIn ||
+        !dataCheckOut
+    ) {
+        alert(
+            "ERRO: Por favor, preencha todos os campos, garantindo que os IDs são números válidos."
+        );
+        return;
+    }
+
+    // 3. Monta o corpo da requisição
+    const data = {
+        clienteId: clienteId,
+        quartoId: quartoId,
+        dataCheckIn: dataCheckIn,
+        dataCheckOut: dataCheckOut,
+    };
+
+    // 4. Envia a requisição e captura a resposta
+    const responseData = await fetchProtected(
+        `${BASE_URL}/reservas`,
+        "POST",
+        data
+    );
+
+    // 5. Salva o ID se a requisição foi bem-sucedida
+    if (responseData && responseData.id) {
+        RESERVA_ID = responseData.id;
+        localStorage.setItem("reservaId", RESERVA_ID);
+        document.getElementById("reserva-id").textContent = RESERVA_ID;
+        // Preenche o campo de input para facilitar o teste de GET/DELETE
+        document.getElementById("reserva-id-input").value = RESERVA_ID;
+    }
+}
+
+// 5. LISTAR RESERVAS (GET /api/reservas)
+async function listReservas() {
+    await fetchProtected(`${BASE_URL}/reservas`, "GET");
+}
+
+// 6. BUSCAR RESERVA POR ID (GET /api/reservas/:id)
+async function getOneReserva() {
+    const targetId = document.getElementById("reserva-id-input").value;
+    if (!targetId) {
+        alert("Digite o ID da reserva que você quer buscar.");
+        return;
+    }
+
+    await fetchProtected(`${BASE_URL}/reservas/${targetId}`, "GET");
+}
+
+// 7. EXCLUIR RESERVA POR ID (DELETE /api/reservas/:id)
+async function deleteReserva() {
+    // Pega o ID do campo de input
+    const targetId = document.getElementById("reserva-id-input").value;
+    if (!targetId) {
+        alert("Digite o ID da reserva que você quer excluir.");
+        return;
+    }
+
+    // A função fetchProtected já trata o status 204 (No Content) corretamente!
+    await fetchProtected(`${BASE_URL}/reservas/${targetId}`, "DELETE");
+
+    // Limpa o ID salvo se a exclusão for bem-sucedida (melhor esforço de front-end)
+    if (parseInt(targetId, 10) === RESERVA_ID) {
+        RESERVA_ID = "";
+        localStorage.removeItem("reservaId");
+        document.getElementById("reserva-id").textContent = "N/A";
+    }
+}
     </script>
   </body>
 </html>

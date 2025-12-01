@@ -12,6 +12,6 @@ router.get('/', ReservaController.list);
 router.post('/', ReservaController.create);      
 router.get('/:id', ReservaController.getOne);    // Adicione esta função ao controller se precisar
 router.put('/:id', ReservaController.update);    
-router.delete('/:id', ReservaController.remove); 
+router.delete('/:id', ReservaController.remove);
 
 module.exports = router;

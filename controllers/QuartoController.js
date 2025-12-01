@@ -138,24 +138,22 @@ exports.remove = async (req, res) => {
   }
 };
 
-// NOVO: Função para sincronizar o status estático no DB com o status dinâmico de hoje
+// =========================================================================
+// FUNÇÕES DE SINCRONIZAÇÃO E STATUS (APÓS exports.remove)
+// =========================================================================
 
-// controllers/QuartoController.js (após exports.remove)
-
-// NOVO: Função Core de Sincronização (Sem depender de req/res)
+// Função Core de Sincronização em Massa (usada pelo Agendador no server.js)
 const runStatusSync = async () => {
+    // [LÓGICA DA SINCRONIZAÇÃO EM MASSA]
     try {
-        const quartos = await Quarto.findAll({ 
-            attributes: ['id', 'numero'] 
-        });
-
+        const quartos = await Quarto.findAll({ attributes: ['id', 'numero'] });
         console.log(`\n[SYNC] Iniciando sincronização de status para ${quartos.length} quartos...`);
 
         await Promise.all(quartos.map(async (quarto) => {
             const statusDinamico = await getDynamicStatus(quarto.id);
-            
             const quartoAtual = await Quarto.findByPk(quarto.id);
             
+            // Lógica de atualização
             if (quartoAtual.status !== 'Manutenção' || statusDinamico === 'Manutenção') {
                  console.log(`[SYNC] Quarto ${quarto.numero} -> Status Calculado: ${statusDinamico}. Atualizando DB.`);
                  await Quarto.update(
@@ -176,7 +174,7 @@ const runStatusSync = async () => {
 };
 
 
-// Handler da Rota Express (Agora apenas chama a função core)
+// Handler da Rota Express para sincronização manual
 exports.syncAllStatuses = async (req, res) => {
     const success = await runStatusSync();
 
@@ -187,15 +185,39 @@ exports.syncAllStatuses = async (req, res) => {
 };
 
 
-// ----------------------------------------------------------------------------------
+// Função para atualizar o status estático de UM quarto específico (usada pelo ReservaController)
+const updateSingleQuartoStatus = async (quartoId) => {
+    try {
+        const statusDinamico = await getDynamicStatus(quartoId);
+        const quartoAtual = await Quarto.findByPk(quartoId);
+        
+        // Aplica a mesma lógica de não sobrescrever Manutenção
+        if (quartoAtual && (quartoAtual.status !== 'Manutenção' || statusDinamico === 'Manutenção')) {
+            await Quarto.update(
+                { status: statusDinamico },
+                { where: { id: quartoId } }
+            );
+            console.log(`[STATUS UPDATE] Quarto ID ${quartoId} atualizado para: ${statusDinamico}`);
+        } else if (quartoAtual) {
+            console.log(`[STATUS UPDATE] Quarto ID ${quartoId} em Manutenção. Não atualizando.`);
+        }
+    } catch (error) {
+        console.error(`[STATUS UPDATE ERROR] Erro ao atualizar status do Quarto ID ${quartoId}:`, error);
+    }
+};
+
+
+// =========================================================================
 // CORREÇÃO ESSENCIAL: EXPORTAR TODAS AS FUNÇÕES NO FINAL
-// ----------------------------------------------------------------------------------
+// (Sem o 'exports.remove' duplicado, pois ele já foi exportado acima)
+// =========================================================================
 module.exports = {
     create: exports.create,
     list: exports.list,
     getOne: exports.getOne,
     update: exports.update,
-    remove: exports.remove,
-    syncAllStatuses: exports.syncAllStatuses, // Exporta o handler da rota
-    runStatusSync // Exporta a função core para o server.js usar no agendamento
+    remove: exports.remove, // A função remove do quarto.routes.js
+    syncAllStatuses: exports.syncAllStatuses, // Handler da rota manual
+    runStatusSync, // Função core para o server.js usar no agendamento
+    updateSingleQuartoStatus // ✅ NOVO: Função para o ReservaController usar
 };
