@@ -2,11 +2,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { sequelize } = require('./models');
+// const { sequelize } = require('./models');
 const authRoutes = require('./routes/auth.routes');
 const clienteRoutes = require('./routes/clientes.routes');
 const quartoRoutes = require('./routes/quartos.routes'); // NOVA ROTA
 const reservaRoutes = require('./routes/reservas.routes'); // NOVA ROTA
+
+const { sequelize, User } = require('./models'); // <-- Adicione 'User' aqui
+const bcrypt = require('bcrypt');                 // <-- Adicione 'bcrypt' aqui
 
 const quartoController = require('./controllers/QuartoController');
 const app = express();
@@ -28,8 +31,11 @@ app.use('/api/quartos', quartoRoutes); // USO DA NOVA ROTA
 app.use('/api/reservas', reservaRoutes); // USO DA NOVA ROTA
 
 // Sincroniza o banco de dados e inicia o servidor
-sequelize.sync({ alter: true })
-  .then(() => {
+sequelize.sync()
+  .then(async () => {
+
+    
+
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
       console.log(`🔗 Banco de dados sincronizado com sucesso.`);
@@ -37,7 +43,7 @@ sequelize.sync({ alter: true })
       // -----------------------------------------------------------------
       // ✅ LÓGICA DE AGENDAMENTO DE STATUS
       // -----------------------------------------------------------------
-      const SYNC_INTERVAL_MS = 10 * 60 * 1000; // 30 minutos em milissegundos
+      const SYNC_INTERVAL_MS = 10* 1000; // 30 minutos em milissegundos
       
       // 1. Executa a sincronização imediatamente no início
       quartoController.runStatusSync();

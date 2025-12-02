@@ -6,7 +6,11 @@ module.exports = (sequelize, DataTypes) => {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     email: { type: DataTypes.STRING, unique: true, allowNull: false, validate: { isEmail: true } },
     password: { type: DataTypes.STRING, allowNull: false },
-    role: { type: DataTypes.STRING, defaultValue: 'admin' } // Ex: 'admin', 'recepcionista'
+   role: { 
+      type: DataTypes.ENUM('admin', 'cliente', 'recepcionista'), // <-- MUDANÇA CRÍTICA AQUI
+      allowNull: false, // O perfil não deve ser nulo
+      defaultValue: 'cliente' // <-- SUGERIDO: Mudar o perfil padrão para 'cliente'
+    }
   }, {
     hooks: {
       beforeCreate: async (user) => {

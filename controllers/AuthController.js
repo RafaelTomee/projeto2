@@ -16,7 +16,7 @@ exports.register = async (req, res) => {
     // O hook 'beforeCreate' no modelo User já criptografou a senha
 
     // Gera o token de acesso
-    const token = jwt.sign({ id: user.id }, authConfig.secret, {
+    const token = jwt.sign({ id: user.id, role: user.role }, authConfig.secret, { 
       expiresIn: authConfig.expiresIn,
     });
 
@@ -25,6 +25,7 @@ exports.register = async (req, res) => {
     console.error(error);
     return res.status(500).send({ error: 'Falha no registro do usuário.' });
   }
+  
 };
 
 exports.login = async (req, res) => {
@@ -37,7 +38,7 @@ exports.login = async (req, res) => {
     }
 
     // Gera o token de acesso
-    const token = jwt.sign({ id: user.id }, authConfig.secret, {
+    const token = jwt.sign({ id: user.id, role: user.role }, authConfig.secret, { // <-- MUDANÇA AQUI
       expiresIn: authConfig.expiresIn,
     });
 
