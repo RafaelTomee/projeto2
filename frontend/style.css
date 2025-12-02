@@ -1,0 +1,158 @@
+/* Paleta de Cores:
+           - #1F271B (Deep Green/Text)
+           - #7A9E7E (Soft Green/Primary Action)
+           - #F4D35E (Gold/Accent)
+           - #587291 (Dark Blue/Gray/Container Background)
+           - #D8DDEF (NOVO: Fundo das Seções)
+        */
+
+      /* Estilos Base e de Layout */
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: #587291; /* Fundo do container principal */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+      h1 {
+        color: white;
+        margin-bottom: 20px;
+        border-bottom: 3px solid #7a9e7e;
+        padding-bottom: 10px;
+      }
+      h2 {
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+        color: #1f271b;
+      }
+
+      /* Estilos das Abas (Tabs) */
+      .tabs {
+        display: flex;
+        margin-bottom: 0;
+        border-bottom: 1px solid #dee2e6;
+      }
+      .tab-button {
+        padding: 10px 15px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-bottom: none;
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #6c757d;
+        transition: all 0.3s;
+        margin-right: 5px;
+        border-radius: 4px 4px 0 0;
+      }
+      .tab-button:hover {
+        color: #1f271b;
+        background-color: #e2e6ea;
+      }
+      .tab-button.active {
+        color: #1f271b;
+        border-color: #dee2e6 #dee2e6 #d8ddef; /* Borda inferior com a nova cor */
+        background-color: #d8ddef; /* NOVO: Cor solicitada */
+        margin-bottom: -1px;
+      }
+      .section-content {
+        background-color: #d8ddef; /* NOVO: Cor solicitada */
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        display: none;
+      }
+      .section-content.active {
+        display: block;
+      }
+
+      /* Estilos dos Elementos */
+      input[type="text"],
+      input[type="password"],
+      input[type="number"],
+      input[type="date"],
+      select {
+        padding: 8px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-sizing: border-box;
+        background-color: white; /* Garante que os campos de input sejam brancos */
+      }
+      button {
+        /* Cor de Ação Primária */
+        padding: 10px 15px;
+        background-color: #7a9e7e;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 10px;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #668568;
+      }
+
+      /* Botão de Registrar (Ação Secundária) */
+      button[onclick="registerUser()"] {
+        background-color: #f4d35e !important;
+        color: #1f271b !important;
+      }
+      button[onclick="registerUser()"]:hover {
+        background-color: #e0c055 !important;
+      }
+
+      /* Botão de Excluir */
+      button[onclick="deleteReserva()"],
+      button[onclick="deleteCliente()"],
+      button[onclick="deleteQuarto()"] {
+        background-color: #dc3545 !important;
+      }
+      button[onclick="deleteReserva()"]:hover,
+      button[onclick="deleteCliente()"]:hover,
+      button[onclick="deleteQuarto()"]:hover {
+        background-color: #bd2130 !important;
+      }
+
+      .token-display {
+        font-size: 14px;
+        font-weight: bold;
+        color: #1f271b;
+        margin-top: 10px;
+        padding: 5px;
+        border: 1px dashed #f4d35e;
+        display: inline-block;
+        margin-right: 15px;
+        border-radius: 4px;
+        max-width: 98%;
+      }
+      .token-display #current-role {
+        color: #7a9e7e;
+      }
+      /* Correção para o token: força a quebra de linha em strings longas e sem espaços */
+      .token-display #current-token {
+        display: block;
+        word-break: break-all;
+        overflow-wrap: break-word;
+      }
+      pre {
+        background-color: white; /* Alterado para se destacar de #D8DDEF */
+        border: 1px solid #ced4da;
+        padding: 15px;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin-top: 15px;
+      }
+      hr {
+        border-top: 1px solid #ced4da;
+      }

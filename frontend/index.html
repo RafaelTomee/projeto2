@@ -1,769 +1,192 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>Hotel UTFPR - Painel de Gerenciamento</title>
-    <style>
-        /* Paleta de Cores:
-           - #1F271B (Deep Green/Text)
-           - #7A9E7E (Soft Green/Primary Action)
-           - #F4D35E (Gold/Accent)
-           - #587291 (Dark Blue/Gray/Container Background)
-           - #D8DDEF (NOVO: Fundo das Seções)
-        */
-        
-        /* Estilos Base e de Layout */
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f8f9fa; 
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: #587291; /* Fundo do container principal */
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        h1 {
-            color: white; 
-            margin-bottom: 20px;
-            border-bottom: 3px solid #7A9E7E; 
-            padding-bottom: 10px;
-        }
-        h2 {
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-            color: #1F271B; 
-        }
-        
-        /* Estilos das Abas (Tabs) */
-        .tabs {
-            display: flex;
-            margin-bottom: 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .tab-button {
-            padding: 10px 15px;
-            cursor: pointer;
-            border: 1px solid transparent;
-            border-bottom: none;
-            background-color: #f8f9fa;
-            font-weight: bold;
-            color: #6c757d;
-            transition: all 0.3s;
-            margin-right: 5px;
-            border-radius: 4px 4px 0 0;
-        }
-        .tab-button:hover {
-            color: #1F271B;
-            background-color: #e2e6ea;
-        }
-        .tab-button.active {
-            color: #1F271B;
-            border-color: #dee2e6 #dee2e6 #D8DDEF; /* Borda inferior com a nova cor */
-            background-color: #D8DDEF; /* NOVO: Cor solicitada */
-            margin-bottom: -1px;
-        }
-        .section-content {
-            background-color: #D8DDEF; /* NOVO: Cor solicitada */
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #dee2e6;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            display: none;
-        }
-        .section-content.active {
-            display: block;
-        }
-
-        /* Estilos dos Elementos */
-        input[type="text"],
-        input[type="password"],
-        input[type="number"],
-        input[type="date"],
-        select {
-            padding: 8px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            box-sizing: border-box;
-            background-color: white; /* Garante que os campos de input sejam brancos */
-        }
-        button {
-            /* Cor de Ação Primária */
-            padding: 10px 15px;
-            background-color: #7A9E7E;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-bottom: 10px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #668568; 
-        }
-        
-        /* Botão de Registrar (Ação Secundária) */
-        button[onclick="registerUser()"] {
-            background-color: #F4D35E !important; 
-            color: #1F271B !important; 
-        }
-        button[onclick="registerUser()"]:hover {
-             background-color: #E0C055 !important;
-        }
-
-        /* Botão de Excluir */
-        button[onclick="deleteReserva()"], button[onclick="deleteCliente()"], button[onclick="deleteQuarto()"] {
-            background-color: #dc3545 !important;
-        }
-        button[onclick="deleteReserva()"]:hover, button[onclick="deleteCliente()"]:hover, button[onclick="deleteQuarto()"]:hover {
-            background-color: #bd2130 !important;
-        }
-
-
-        .token-display {
-            font-size: 14px;
-            font-weight: bold;
-            color: #1F271B; 
-            margin-top: 10px;
-            padding: 5px;
-            border: 1px dashed #F4D35E; 
-            display: inline-block;
-            margin-right: 15px;
-            border-radius: 4px;
-            max-width: 98%; 
-        }
-        .token-display #current-role {
-            color: #7A9E7E; 
-        }
-        /* Correção para o token: força a quebra de linha em strings longas e sem espaços */
-        .token-display #current-token {
-            display: block; 
-            word-break: break-all;
-            overflow-wrap: break-word; 
-        }
-        pre {
-            background-color: white; /* Alterado para se destacar de #D8DDEF */
-            border: 1px solid #ced4da;
-            padding: 15px;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin-top: 15px;
-        }
-        hr {
-            border-top: 1px solid #ced4da;
-        }
-    </style>
-</head>
-<body>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
     <div class="container">
-        <h1>Hotel UTFPR - Painel de Gerenciamento</h1>
+      <h1>Hotel UTFPR - Painel de Gerenciamento</h1>
 
-        <div class="tabs">
-            <button class="tab-button active" onclick="showTab('auth-section', this)">Autenticação</button>
-            <button class="tab-button" onclick="showTab('clientes-section', this)">Clientes</button>
-            <button class="tab-button" onclick="showTab('quartos-section', this)">Quartos</button>
-            <button class="tab-button" onclick="showTab('reservas-section', this)">Reservas</button>
+      <div class="tabs">
+        <button
+          class="tab-button active"
+          onclick="showTab('auth-section', this)"
+        >
+          Autenticação
+        </button>
+        <button class="tab-button" onclick="showTab('clientes-section', this)">
+          Clientes
+        </button>
+        <button class="tab-button" onclick="showTab('quartos-section', this)">
+          Quartos
+        </button>
+        <button class="tab-button" onclick="showTab('reservas-section', this)">
+          Reservas
+        </button>
+      </div>
+
+      <div id="auth-section" class="section-content active">
+        <h2>Autenticação (Login & Registro)</h2>
+        <input
+          type="text"
+          id="email"
+          placeholder="Email do Usuário (ex: admin@utfpr.edu.br)"
+          value=""
+        />
+        <input type="password" id="password" placeholder="Senha" value="" />
+        <button onclick="login()">Login e Obter Token</button>
+        <button onclick="registerUser()">Registrar Novo Usuário</button>
+
+        <div class="token-display">
+          Token JWT: <span id="current-token">N/A</span>
         </div>
-
-        <div id="auth-section" class="section-content active">
-            <h2>1. Autenticação (Login & Registro)</h2>
-            <input
-                type="text"
-                id="email"
-                placeholder="Email do Usuário (ex: admin@utfpr.edu.br)"
-                value=""
-            />
-            <input
-                type="password"
-                id="password"
-                placeholder="Senha"
-                value=""
-            />
-            <button onclick="login()">Login e Obter Token</button>
-            <button onclick="registerUser()">Registrar Novo Usuário</button>
-
-            <div class="token-display">
-                Token JWT: <span id="current-token">N/A</span>
-            </div>
-            <div class="token-display">
-                Perfil Logado: <span id="current-role">N/A</span>
-            </div>
-            <pre id="auth-output">Saída da Requisição...</pre>
+        <div class="token-display">
+          Perfil Logado: <span id="current-role">N/A</span>
         </div>
+        <pre id="auth-output">Saída da Requisição...</pre>
+      </div>
 
-        <div id="clientes-section" class="section-content">
-            <h2>2. Clientes (CRUD Completo)</h2>
-            <input
-                type="number"
-                id="cliente-id-input"
-                placeholder="ID (Para Buscar, Editar ou Excluir)"
-                value=""
-            />
+      <div id="clientes-section" class="section-content">
+        <h2>Gerenciamento de Clientes</h2>
+        <input
+          type="number"
+          id="cliente-id-input"
+          placeholder="ID (Para Buscar, Editar ou Excluir)"
+          value=""
+        />
 
-            <input
-                type="text"
-                id="cliente-nome"
-                placeholder="Nome do Hóspede"
-                value=""
-            />
-            <input
-                type="text"
-                id="cliente-cpf"
-                placeholder="CPF"
-                value=""
-            />
-            <input
-                type="text"
-                id="cliente-telefone"
-                placeholder="Telefone"
-                value=""
-            />
-            <input
-                type="text"
-                id="cliente-email"
-                placeholder="Email de Contato"
-                value=""
-            />
-            <br /><br />
+        <input
+          type="text"
+          id="cliente-nome"
+          placeholder="Nome do Hóspede"
+          value=""
+        />
+        <input type="text" id="cliente-cpf" placeholder="CPF" value="" />
+        <input
+          type="text"
+          id="cliente-telefone"
+          placeholder="Telefone"
+          value=""
+        />
+        <input
+          type="text"
+          id="cliente-email"
+          placeholder="Email de Contato"
+          value=""
+        />
+        <br /><br />
 
-            <button onclick="createCliente()">1. Criar Novo Cliente</button>
-            <button onclick="listClientes()">2. Listar Todos os Clientes</button>
-            <button onclick="getOneCliente()">3. Buscar Cliente por ID</button>
-            <button onclick="updateCliente()">4. Editar Cliente por ID</button>
-            <button onclick="deleteCliente()">5. Excluir Cliente por ID</button>
+        <button onclick="createCliente()">1. Criar Novo Cliente</button>
+        <button onclick="listClientes()">2. Listar Todos os Clientes</button>
+        <button onclick="getOneCliente()">3. Buscar Cliente por ID</button>
+        <button onclick="updateCliente()">4. Editar Cliente por ID</button>
+        <button onclick="deleteCliente()">5. Excluir Cliente por ID</button>
 
-            <div class="token-display">
-                ID Cliente Criado/Atualizado: <span id="cliente-id">N/A</span>
-            </div>
-            <pre id="cliente-output">Saída da Requisição...</pre>
+        <div class="token-display">
+          ID Cliente Criado/Atualizado: <span id="cliente-id">N/A</span>
         </div>
+        <pre id="cliente-output">Saída da Requisição...</pre>
+      </div>
 
-        <div id="quartos-section" class="section-content">
-            <h2>3. Gerenciamento de Quartos (CRUD Completo)</h2>
-            <input
-                type="number"
-                id="quarto-id-input"
-                placeholder="ID (Para Buscar, Editar ou Excluir)"
-                value=""
-            />
-            <input
-                type="text"
-                id="quarto-numero"
-                placeholder="Número (Ex: 101)"
-                value=""
-            />
-            <select id="quarto-tipo">
-                <option value="Solteiro">Solteiro</option>
-                <option value="Duplo" selected>Duplo</option>
-                <option value="Casal">Casal</option>
-                <option value="Suite">Suíte</option>
-            </select>
-            <input
-                type="number"
-                id="quarto-valor"
-                placeholder="Valor Diária (Ex: 150.00)"
-                value=""
-            />
-            <input
-                type="number"
-                id="quarto-capacidade"
-                placeholder="Capacidade (Ex: 2)"
-                value=""
-            />
-            <select id="quarto-status-edit">
-                <option value="Disponível" selected>Disponível</option>
-                <option value="Ocupado">Ocupado</option>
-                <option value="Manutenção">Manutenção</option>
-            </select>
-            <br /><br />
+      <div id="quartos-section" class="section-content">
+        <h2>Gerenciamento de Quartos</h2>
 
-            <button onclick="createQuarto()">1. Criar Novo Quarto</button>
-            <button onclick="listQuartos()">2. Listar Todos os Quartos</button>
-            <button onclick="getOneQuarto()">3. Buscar Quarto por ID</button>
-            <button onclick="updateQuarto()">4. Editar Quarto por ID</button>
-            <button onclick="deleteQuarto()">5. Excluir Quarto por ID</button>
+        <input
+          type="number"
+          id="quarto-id-input"
+          placeholder="ID (Para Buscar, Editar ou Excluir)"
+          value=""
+        />
+        <input
+          type="text"
+          id="quarto-numero"
+          placeholder="Número (Ex: 101)"
+          value=""
+        />
+        <select id="quarto-tipo">
+          <option value="Solteiro">Solteiro</option>
+          <option value="Duplo" selected>Duplo</option>
+          <option value="Casal">Casal</option>
+          <option value="Suite">Suíte</option>
+        </select>
+        <input
+          type="number"
+          id="quarto-valor"
+          placeholder="Valor Diária (Ex: 150.00)"
+          value=""
+        />
+        <input
+          type="number"
+          id="quarto-capacidade"
+          placeholder="Capacidade (Ex: 2)"
+          value=""
+        />
+        <select id="quarto-status-edit">
+          <option value="Disponível" selected>Disponível</option>
+          <option value="Ocupado">Ocupado</option>
+          <option value="Manutenção">Manutenção</option>
+        </select>
+        <br /><br />
 
-            <div class="token-display">
-                ID Quarto Criado/Atualizado: <span id="quarto-id">N/A</span>
-            </div>
-            <pre id="quarto-output">Saída da Requisição...</pre>
+        <button onclick="createQuarto()">1. Criar Novo Quarto</button>
+        <button onclick="listQuartos()">2. Listar Todos os Quartos</button>
+        <button onclick="getOneQuarto()">3. Buscar Quarto por ID</button>
+        <button onclick="updateQuarto()">4. Editar Quarto por ID</button>
+        <button onclick="deleteQuarto()">5. Excluir Quarto por ID</button>
+
+        <div class="token-display">
+          ID Quarto Criado/Atualizado: <span id="quarto-id">N/A</span>
         </div>
+        <pre id="quarto-output">Saída da Requisição...</pre>
+      </div>
 
-        <div id="reservas-section" class="section-content">
-            <h2>4. Criar e Gerenciar Reservas (CRUD Básico)</h2>
-            
-            <h3>Fazer Nova Reserva</h3>
-            <input
-                type="number"
-                id="reserva-clienteId"
-                placeholder="ID do Cliente"
-                value=""
-            />
-            <input
-                type="number"
-                id="reserva-quartoId"
-                placeholder="ID do Quarto"
-                value=""
-            />
-            <label for="reserva-checkIn">Check-In:</label>
-            <input type="date" id="reserva-checkIn" />
+      <div id="reservas-section" class="section-content">
+        <h2>Criar e Gerenciar Reservas</h2>
 
-            <label for="reserva-checkOut">Check-Out:</label>
-            <input type="date" id="reserva-checkOut" />
-            <br /><br />
+        <h3>Fazer Nova Reserva</h3>
+        <input
+          type="number"
+          id="reserva-clienteId"
+          placeholder="ID do Cliente"
+          value=""
+        />
+        <input
+          type="number"
+          id="reserva-quartoId"
+          placeholder="ID do Quarto"
+          value=""
+        />
+        <label for="reserva-checkIn">Check-In:</label>
+        <input type="date" id="reserva-checkIn" />
 
-            <button onclick="createReserva()">1. Criar Nova Reserva</button>
-            <button onclick="listReservas()">2. Listar Todas as Reservas</button>
+        <label for="reserva-checkOut">Check-Out:</label>
+        <input type="date" id="reserva-checkOut" />
+        <br /><br />
 
-            <hr style="margin: 15px 0" />
+        <button onclick="createReserva()">1. Criar Nova Reserva</button>
+        <button onclick="listReservas()">2. Listar Todas as Reservas</button>
 
-            <h3>Gerenciar por ID</h3>
-            <input
-                type="number"
-                id="reserva-id-input"
-                placeholder="ID da Reserva"
-                value=""
-            />
-            <button onclick="getOneReserva()">3. Buscar Reserva por ID</button>
-            <button onclick="deleteReserva()">
-                4. Excluir Reserva por ID
-            </button>
+        <hr style="margin: 15px 0" />
 
-            <div class="token-display">
-                ID Reserva Criada: <span id="reserva-id">N/A</span>
-            </div>
-            <pre id="reserva-output">Saída da Requisição...</pre>
+        <h3>Gerenciar por ID</h3>
+        <input
+          type="number"
+          id="reserva-id-input"
+          placeholder="ID da Reserva"
+          value=""
+        />
+        <button onclick="getOneReserva()">3. Buscar Reserva por ID</button>
+        <button onclick="deleteReserva()">4. Excluir Reserva por ID</button>
+
+        <div class="token-display">
+          ID Reserva Criada: <span id="reserva-id">N/A</span>
         </div>
+        <pre id="reserva-output">Saída da Requisição...</pre>
+      </div>
     </div>
 
-    <script>
-        // Função que controla a exibição das abas
-        function showTab(sectionId, clickedButton) {
-            // 1. Esconde todas as seções de conteúdo
-            document.querySelectorAll('.section-content').forEach(section => {
-                section.classList.remove('active');
-            });
-            // 2. Remove a classe 'active' de todos os botões
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-
-            // 3. Mostra a seção desejada e ativa o botão clicado
-            document.getElementById(sectionId).classList.add('active');
-            clickedButton.classList.add('active');
-        }
-
-        // Inicializa a aba de Autenticação ao carregar
-        document.addEventListener('DOMContentLoaded', () => {
-            const firstButton = document.querySelector('.tab-button');
-            if(firstButton) {
-                 showTab('auth-section', firstButton);
-            }
-        });
-
-        // -------------------------------------------------------------
-        // SEU CÓDIGO JAVASCRIPT DE LÓGICA DE TESTE (INALTERADO)
-        // -------------------------------------------------------------
-        
-        const BASE_URL = "http://localhost:3000/api";
-        let CURRENT_TOKEN = localStorage.getItem("jwtToken") || "";
-        let CURRENT_ROLE = localStorage.getItem("userRole") || "";
-        let CLIENTE_ID = localStorage.getItem("clienteId") || "";
-        let QUARTO_ID = localStorage.getItem("quartoId") || "";
-        let RESERVA_ID = localStorage.getItem("reservaId") || "";
-
-        document.getElementById("current-token").textContent = CURRENT_TOKEN || "N/A";
-        document.getElementById("current-role").textContent = CURRENT_ROLE || "N/A";
-        document.getElementById("cliente-id").textContent = CLIENTE_ID || "N/A";
-        document.getElementById("quarto-id").textContent = QUARTO_ID || "N/A";
-        document.getElementById("reserva-id").textContent = RESERVA_ID || "N/A";
-
-        // Helper para requisições protegidas
-        async function fetchProtected(url, method, body = null) {
-            let outputElementId;
-            if (url.includes("/clientes")) {
-                outputElementId = "cliente-output";
-            } else if (url.includes("/quartos")) {
-                outputElementId = "quarto-output";
-            } else if (url.includes("/reservas")) {
-                outputElementId = "reserva-output";
-            } else if (url.includes("/auth")) {
-                outputElementId = "auth-output";
-            } else {
-                outputElementId = "auth-output";
-            }
-
-            const outputElement = document.getElementById(outputElementId);
-            if (!outputElement) {
-                console.error("Elemento de saída não encontrado:", outputElementId);
-                return;
-            }
-
-            outputElement.textContent = "Carregando...";
-
-            if (
-                !CURRENT_TOKEN &&
-                !url.includes("/auth/register") &&
-                !url.includes("/auth/login")
-            ) {
-                outputElement.textContent =
-                    "ERRO: Faça o login primeiro para obter o token.";
-                return;
-            }
-
-            const options = {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(CURRENT_TOKEN &&
-                        !url.includes("/auth") && {
-                            Authorization: `Bearer ${CURRENT_TOKEN}`,
-                        }),
-                },
-                body: body ? JSON.stringify(body) : null,
-            };
-
-            try {
-                const response = await fetch(url, options);
-
-                if (response.status === 204) {
-                    outputElement.textContent = `Status: 204 No Content\n\nOperação de exclusão bem-sucedida.`;
-                    return { success: true, status: 204 };
-                }
-                
-                let data = {};
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    outputElement.textContent = `Status: ${response.status}\n\nErro do servidor sem JSON (Provavelmente HTML ou texto simples).`;
-                    return null; 
-                }
-
-                outputElement.textContent =
-                    `Status: ${response.status}\n\n` + JSON.stringify(data, null, 2);
-
-                return data;
-            } catch (error) {
-                outputElement.textContent = "ERRO DE REDE/SERVIDOR: " + error.message;
-                return null;
-            }
-        }
-
-        // NOVO: 1. REGISTRO
-        async function registerUser() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const outputElement = document.getElementById("auth-output");
-
-            try {
-                const response = await fetch(`${BASE_URL}/auth/register`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password }),
-                });
-
-                const data = await response.json();
-                outputElement.textContent =
-                    `Status: ${response.status}\n\n` + JSON.stringify(data, null, 2);
-
-                if (response.ok) {
-                    alert("Registro bem-sucedido! Tente fazer o Login agora.");
-                }
-            } catch (error) {
-                outputElement.textContent = "ERRO: " + error.message;
-            }
-        }
-
-        // 1. LOGIN
-        async function login() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const outputElement = document.getElementById("auth-output");
-
-            try {
-                const response = await fetch(`${BASE_URL}/auth/login`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password }),
-                });
-
-                const data = await response.json();
-                outputElement.textContent =
-                    `Status: ${response.status}\n\n` + JSON.stringify(data, null, 2);
-
-                if (response.ok && data.token) {
-                    CURRENT_TOKEN = data.token;
-                    CURRENT_ROLE = data.user.role || 'N/A';
-                    localStorage.setItem("jwtToken", CURRENT_TOKEN);
-                    localStorage.setItem("userRole", CURRENT_ROLE);
-                    document.getElementById("current-token").textContent = CURRENT_TOKEN;
-                    document.getElementById("current-role").textContent = CURRENT_ROLE;
-                    alert(`Login bem-sucedido! Perfil: ${CURRENT_ROLE}. Token salvo.`);
-                } else {
-                    CURRENT_TOKEN = "";
-                    CURRENT_ROLE = "";
-                    localStorage.removeItem("jwtToken");
-                    localStorage.removeItem("userRole");
-                    document.getElementById("current-token").textContent = "N/A";
-                    document.getElementById("current-role").textContent = "N/A";
-                }
-            } catch (error) {
-                outputElement.textContent = "ERRO: " + error.message;
-            }
-        }
-
-        // 2. CRIAR CLIENTE
-        async function createCliente() {
-            const nome = document.getElementById("cliente-nome").value;
-            const cpf = document.getElementById("cliente-cpf").value;
-            const telefone = document.getElementById("cliente-telefone").value; 
-            const email = document.getElementById("cliente-email").value; 
-
-            const data = await fetchProtected(`${BASE_URL}/clientes`, "POST", {
-                nome: nome,
-                cpf: cpf,
-                telefone: telefone,
-                email: email,
-            });
-
-            if (data && data.id) {
-                CLIENTE_ID = data.id;
-                localStorage.setItem("clienteId", CLIENTE_ID);
-                document.getElementById("cliente-id").textContent = CLIENTE_ID;
-
-                document.getElementById("reserva-clienteId").value = CLIENTE_ID;
-                document.getElementById("cliente-id-input").value = CLIENTE_ID;
-            }
-        }
-
-        // 2. LISTAR CLIENTES
-        async function listClientes() {
-            await fetchProtected(`${BASE_URL}/clientes`, "GET");
-        }
-
-        // 3. BUSCAR CLIENTE POR ID (GET /api/clientes/:id)
-        async function getOneCliente() {
-            const targetId = document.getElementById("cliente-id-input").value;
-            if (!targetId) {
-                alert("Digite o ID do cliente no campo ID.");
-                return;
-            }
-
-            await fetchProtected(`${BASE_URL}/clientes/${targetId}`, "GET");
-        }
-
-        // 4. EDITAR CLIENTE (PUT /api/clientes/:id)
-        async function updateCliente() {
-            const targetId = document.getElementById("cliente-id-input").value;
-            if (!targetId) {
-                alert(
-                    "Digite o ID do cliente que você quer editar no campo ID."
-                );
-                return;
-            }
-
-            const nome = document.getElementById("cliente-nome").value;
-            const cpf = document.getElementById("cliente-cpf").value;
-            const telefone = document.getElementById("cliente-telefone").value;
-            const email = document.getElementById("cliente-email").value;
-
-            await fetchProtected(`${BASE_URL}/clientes/${targetId}`, "PUT", {
-                nome: nome,
-                cpf: cpf,
-                telefone: telefone,
-                email: email,
-            });
-
-            document.getElementById("cliente-id").textContent = targetId;
-        }
-
-        // 5. EXCLUIR CLIENTE (DELETE /api/clientes/:id)
-        async function deleteCliente() {
-            const targetId = document.getElementById("cliente-id-input").value;
-            if (!targetId) {
-                alert(
-                    "Digite o ID do cliente que você quer excluir no campo ID."
-                );
-                return;
-            }
-
-            const result = await fetchProtected(`${BASE_URL}/clientes/${targetId}`, "DELETE");
-            
-            if (result && result.status === 204 && parseInt(targetId, 10) === parseInt(CLIENTE_ID, 10)) {
-                CLIENTE_ID = "";
-                localStorage.removeItem("clienteId");
-                document.getElementById("cliente-id").textContent = "N/A";
-            }
-        }
-        
-        // 1. CRIAR QUARTO (POST /api/quartos)
-        async function createQuarto() {
-            const numero = document.getElementById("quarto-numero").value;
-            const tipo = document.getElementById("quarto-tipo").value;
-            const valorDiaria = document.getElementById("quarto-valor").value;
-            const capacidade = document.getElementById("quarto-capacidade").value;
-            const status = document.getElementById("quarto-status-edit").value;
-
-            const data = await fetchProtected(`${BASE_URL}/quartos`, "POST", {
-                numero: numero,
-                tipo: tipo,
-                valorDiaria: parseFloat(valorDiaria),
-                capacidade: parseInt(capacidade, 10),
-                status: status,
-            });
-
-            if (data && data.id) {
-                QUARTO_ID = data.id;
-                localStorage.setItem("quartoId", QUARTO_ID);
-                document.getElementById("quarto-id").textContent = QUARTO_ID;
-                document.getElementById("quarto-id-input").value = QUARTO_ID;
-                document.getElementById("reserva-quartoId").value = QUARTO_ID;
-            }
-        }
-
-        // 2. LISTAR QUARTOS (GET /api/quartos?status=...)
-        async function listQuartos() {
-            await fetchProtected(`${BASE_URL}/quartos`, "GET");
-        }
-
-        // 3. BUSCAR QUARTO POR ID (GET /api/quartos/:id)
-        async function getOneQuarto() {
-            const targetId = document.getElementById("quarto-id-input").value;
-            if (!targetId) {
-                alert("Digite o ID do quarto no campo ID.");
-                return;
-            }
-
-            await fetchProtected(`${BASE_URL}/quartos/${targetId}`, "GET");
-        }
-
-        // 4. ATUALIZAR QUARTO (PUT /api/quartos/:id)
-        async function updateQuarto() {
-            const targetId = document.getElementById("quarto-id-input").value;
-            if (!targetId) {
-                alert("Digite o ID do quarto que você quer editar no campo ID.");
-                return;
-            }
-
-            const numero = document.getElementById("quarto-numero").value;
-            const tipo = document.getElementById("quarto-tipo").value;
-            const valorDiaria = document.getElementById("quarto-valor").value;
-            const capacidade = document.getElementById("quarto-capacidade").value;
-            const newStatus = document.getElementById("quarto-status-edit").value;
-
-            await fetchProtected(`${BASE_URL}/quartos/${targetId}`, "PUT", {
-                numero: numero,
-                tipo: tipo,
-                valorDiaria: parseFloat(valorDiaria),
-                capacidade: parseInt(capacidade, 10),
-                status: newStatus,
-            });
-
-            document.getElementById("quarto-id").textContent = targetId;
-        }
-
-        // 5. EXCLUIR QUARTO (DELETE /api/quartos/:id)
-        async function deleteQuarto() {
-            const targetId = document.getElementById("quarto-id-input").value;
-            if (!targetId) {
-                alert("Digite o ID do quarto que você quer excluir no campo ID.");
-                return;
-            }
-            
-            const result = await fetchProtected(`${BASE_URL}/quartos/${targetId}`, "DELETE");
-            
-            if (result && result.status === 204 && parseInt(targetId, 10) === parseInt(QUARTO_ID, 10)) {
-                QUARTO_ID = "";
-                localStorage.removeItem("quartoId");
-                document.getElementById("quarto-id").textContent = "N/A";
-            }
-        }
-        
-        // 1. CRIAR RESERVA (POST /api/reservas)
-        async function createReserva() {
-            const clienteId = parseInt(
-                document.getElementById("reserva-clienteId").value,
-                10
-            );
-            const quartoId = parseInt(
-                document.getElementById("reserva-quartoId").value,
-                10
-            );
-            const dataCheckIn = document.getElementById("reserva-checkIn").value;
-            const dataCheckOut = document.getElementById("reserva-checkOut").value;
-
-            if (
-                isNaN(clienteId) ||
-                isNaN(quartoId) ||
-                !dataCheckIn ||
-                !dataCheckOut
-            ) {
-                alert(
-                    "ERRO: Por favor, preencha todos os campos, garantindo que os IDs são números válidos."
-                );
-                return;
-            }
-
-            const data = {
-                clienteId: clienteId,
-                quartoId: quartoId,
-                dataCheckIn: dataCheckIn,
-                dataCheckOut: dataCheckOut,
-            };
-
-            const responseData = await fetchProtected(
-                `${BASE_URL}/reservas`,
-                "POST",
-                data
-            );
-
-            if (responseData && responseData.id) {
-                RESERVA_ID = responseData.id;
-                localStorage.setItem("reservaId", RESERVA_ID);
-                document.getElementById("reserva-id").textContent = RESERVA_ID;
-                document.getElementById("reserva-id-input").value = RESERVA_ID;
-            }
-        }
-
-        // 2. LISTAR RESERVAS (GET /api/reservas)
-        async function listReservas() {
-            await fetchProtected(`${BASE_URL}/reservas`, "GET");
-        }
-
-        // 3. BUSCAR RESERVA POR ID (GET /api/reservas/:id)
-        async function getOneReserva() {
-            const targetId = document.getElementById("reserva-id-input").value;
-            if (!targetId) {
-                alert("Digite o ID da reserva que você quer buscar.");
-                return;
-            }
-
-            await fetchProtected(`${BASE_URL}/reservas/${targetId}`, "GET");
-        }
-
-        // 4. EXCLUIR RESERVA POR ID (DELETE /api/reservas/:id)
-        async function deleteReserva() {
-            const targetId = document.getElementById("reserva-id-input").value;
-            if (!targetId) {
-                alert("Digite o ID da reserva que você quer excluir.");
-                return;
-            }
-
-            const result = await fetchProtected(`${BASE_URL}/reservas/${targetId}`, "DELETE");
-
-            if (result && result.status === 204 && parseInt(targetId, 10) === parseInt(RESERVA_ID, 10)) {
-                RESERVA_ID = "";
-                localStorage.removeItem("reservaId");
-                document.getElementById("reserva-id").textContent = "N/A";
-            }
-        }
-    </script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
