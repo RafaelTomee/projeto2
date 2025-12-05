@@ -156,3 +156,93 @@
       hr {
         border-top: 1px solid #ced4da;
       }
+
+      /* ... dentro da tag <style> ... */
+
+        /* Correções de estilo (mantidas) */
+        
+        /* NOVO ESTILO: Tabela de Dados */
+        .data-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 15px;
+          font-size: 14px;
+      }
+      .data-table th, .data-table td {
+          border: 1px solid #ced4da;
+          padding: 10px;
+          text-align: left;
+      }
+      .data-table th {
+          background-color: #e6e9f1; /* Fundo para cabeçalho da tabela (claro) */
+          color: #1F271B;
+          font-weight: bold;
+      }
+      .data-table tbody tr:nth-child(even) {
+          background-color: #f7f9fc; /* Fundo zebrado para facilitar a leitura */
+      }
+      
+      /* ... restante do CSS ... */
+
+      /* Estilo para Notificação de Sucesso (POST/PUT/GET Simples) */
+      .success-box {
+        background-color: #d4edda; /* Verde claro */
+        color: #155724; /* Verde escuro */
+        border: 1px solid #c3e6cb;
+        padding: 15px;
+        margin-top: 15px;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    .success-box strong {
+        font-weight: bold;
+        color: #0c3e1e;
+    }
+    .success-details {
+        font-size: 13px;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #c3e6cb;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    /* ... restante do CSS (mantido) ... */
+
+        /* Estilo para Notificação de Sucesso (POST/PUT/GET Simples) */
+        .success-box {
+          background-color: #d4edda; /* Verde claro */
+          color: #155724; /* Verde escuro */
+          border: 1px solid #c3e6cb;
+          padding: 15px;
+          margin-top: 15px;
+          border-radius: 4px;
+          font-size: 16px;
+      }
+      .success-box strong {
+          font-weight: bold;
+          color: #0c3e1e;
+      }
+
+      /* NOVO ESTILO: Caixa de Erro */
+      .error-box {
+          background-color: #f8d7da; /* Vermelho claro */
+          color: #721c24; /* Vermelho escuro */
+          border: 1px solid #f5c6cb;
+          padding: 15px;
+          margin-top: 15px;
+          border-radius: 4px;
+          font-size: 16px;
+          font-weight: bold;
+      }
+      .error-details {
+          font-size: 13px;
+          margin-top: 8px;
+          padding-top: 8px;
+          border-top: 1px dashed #f5c6cb;
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          font-weight: normal; /* Detalhes não ficam em negrito */
+      }
+      
+      /* ... restante do CSS ... */
