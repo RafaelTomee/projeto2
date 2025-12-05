@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     dataCheckOut: { type: DataTypes.DATEONLY, allowNull: false },
     valorTotal: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     status: { type: DataTypes.ENUM('Confirmada', 'Check-In', 'Check-Out', 'Cancelada'), allowNull: false, defaultValue: 'Confirmada' },
-    // Chaves estrangeiras definidas nas associações
+    
     clienteId: { type: DataTypes.INTEGER, allowNull: false },
     quartoId: { type: DataTypes.INTEGER, allowNull: false },
   });

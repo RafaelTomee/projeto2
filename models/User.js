@@ -7,9 +7,9 @@ module.exports = (sequelize, DataTypes) => {
     email: { type: DataTypes.STRING, unique: true, allowNull: false, validate: { isEmail: true } },
     password: { type: DataTypes.STRING, allowNull: false },
    role: { 
-      type: DataTypes.ENUM('admin', 'cliente', 'recepcionista'), // <-- MUDANÇA CRÍTICA AQUI
-      allowNull: false, // O perfil não deve ser nulo
-      defaultValue: 'cliente' // <-- SUGERIDO: Mudar o perfil padrão para 'cliente'
+      type: DataTypes.ENUM('admin', 'cliente', 'recepcionista'), 
+      allowNull: false, 
+      defaultValue: 'cliente' 
     }
   }, {
     hooks: {

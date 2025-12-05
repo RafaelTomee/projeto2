@@ -9,7 +9,6 @@ module.exports = (req, res, next) => {
     return res.status(401).send({ error: 'Token não fornecido.' });
   }
 
-  // Espera o formato: "Bearer <token>"
   const parts = authHeader.split(' ');
   if (parts.length !== 2) {
     return res.status(401).send({ error: 'Formato do token inválido.' });
@@ -26,7 +25,7 @@ module.exports = (req, res, next) => {
       return res.status(401).send({ error: 'Token inválido ou expirado.' });
     }
 
-    req.userId = decoded.id; // Adiciona o ID do usuário autenticado à requisição
+    req.userId = decoded.id; 
     return next();
   });
 };

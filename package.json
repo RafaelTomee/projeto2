@@ -12,7 +12,7 @@
     "express",
     "sequelize"
   ],
-  "author": "",
+  "author": "Rafael, Gustavo e Julio",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",

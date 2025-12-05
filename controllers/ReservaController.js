@@ -1,12 +1,9 @@
-// controllers/ReservaController.js
 const { Reserva, Quarto, Cliente, sequelize } = require("../models");
 const { Op } = require("sequelize");
 const { parse, differenceInDays } = require("date-fns");
 
 const quartoController = require("./QuartoController");
-// --- Funções de Lógica de Negócio ---
 
-// 1. Verifica se o quarto está disponível no período
 const checkAvailability = async (
   quartoId,
   checkIn,
@@ -16,16 +13,16 @@ const checkAvailability = async (
   const queryOptions = {
     where: {
       quartoId: quartoId,
-      status: { [Op.ne]: "Cancelada" }, // Ignora reservas canceladas
+      status: { [Op.ne]: "Cancelada" }, 
       [Op.or]: [
-        // Nova reserva começa durante uma existente
+      
         {
           dataCheckIn: { [Op.lt]: checkOut },
           dataCheckOut: { [Op.gt]: checkIn },
         },
-        // Nova reserva engloba uma existente
+
         { dataCheckIn: { [Op.gte]: checkIn, [Op.lt]: checkOut } },
-        // Nova reserva está contida em uma existente
+
         { dataCheckOut: { [Op.lt]: checkOut, [Op.gt]: checkIn } },
       ],
     },

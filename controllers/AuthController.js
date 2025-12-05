@@ -1,4 +1,3 @@
-// controllers/AuthController.js
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 const authConfig = require('../config/auth');
@@ -12,10 +11,7 @@ exports.register = async (req, res) => {
     }
 
     const user = await User.create({ email, password });
-    
-    // O hook 'beforeCreate' no modelo User já criptografou a senha
 
-    // Gera o token de acesso
     const token = jwt.sign({ id: user.id, role: user.role }, authConfig.secret, { 
       expiresIn: authConfig.expiresIn,
     });
@@ -37,8 +33,7 @@ exports.login = async (req, res) => {
       return res.status(401).send({ error: 'Email ou senha inválidos.' });
     }
 
-    // Gera o token de acesso
-    const token = jwt.sign({ id: user.id, role: user.role }, authConfig.secret, { // <-- MUDANÇA AQUI
+    const token = jwt.sign({ id: user.id, role: user.role }, authConfig.secret, { 
       expiresIn: authConfig.expiresIn,
     });
 
