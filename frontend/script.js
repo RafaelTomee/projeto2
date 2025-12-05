@@ -52,15 +52,20 @@ function renderCreationSuccess(data, type, elementId) {
     let message = '';
 
     if (type === 'Cliente') {
-        message = `✅ ${type} criado com sucesso! | ID: <strong>${itemId}</strong> | Nome: <strong>${data.nome}</strong>`;
+        // EMOJI REMOVIDO
+        message = `${type} criado com sucesso! | ID: <strong>${itemId}</strong> | Nome: <strong>${data.nome}</strong>`;
     } else if (type === 'Quarto') {
-        message = `✅ ${type} criado com sucesso! | ID: <strong>${itemId}</strong> | N°: <strong>${data.numero}</strong> | Tipo: <strong>${data.tipo}</strong>`;
+        // EMOJI REMOVIDO
+        message = `${type} criado com sucesso! | ID: <strong>${itemId}</strong> | N°: <strong>${data.numero}</strong> | Tipo: <strong>${data.tipo}</strong>`;
     } else if (type === 'Reserva') {
-        message = `✅ ${type} criada com sucesso! | ID: <strong>${itemId}</strong> | Cliente ID: <strong>${data.clienteId}</strong> | Quarto ID: <strong>${data.quartoId}</strong>`;
+        // EMOJI REMOVIDO
+        message = `${type} criada com sucesso! | ID: <strong>${itemId}</strong> | Cliente ID: <strong>${data.clienteId}</strong> | Quarto ID: <strong>${data.quartoId}</strong>`;
     } else if (type === 'Update') {
-        message = `✅ Registro ID: <strong>${itemId}</strong> atualizado com sucesso!`;
+        // EMOJI REMOVIDO
+        message = `Registro ID: <strong>${itemId}</strong> atualizado com sucesso!`;
     } else {
-        message = `✅ Requisição bem-sucedida! | ID: <strong>${itemId}</strong>`;
+        // EMOJI REMOVIDO
+        message = `Requisição bem-sucedida! | ID: <strong>${itemId}</strong>`;
     }
 
     outputElement.innerHTML = `
@@ -101,15 +106,13 @@ function renderError(response, data, elementId) {
 
     outputElement.innerHTML = `
         <div class="error-box">
-            🛑 ${errorMessage}
+            ERRO: ${errorMessage}
             
         </div>
     `;
 }
 
 // Função para renderizar um Array de objetos em Tabela HTML
-// Função para renderizar um array de objetos em uma tabela HTML
-// Função para renderizar um Array de objetos em Tabela HTML (CORRIGIDA)
 function renderDataInTable(data, elementId) {
     const outputElement = document.getElementById(elementId);
     
@@ -136,7 +139,7 @@ function renderDataInTable(data, elementId) {
     if (data.length > 0) {
         let headers = "";
         for (const key in data[0]) {
-            // ✅ CORREÇÃO AQUI: Se a chave estiver na lista, pula para a próxima iteração
+            // Se a chave estiver na lista, pula para a próxima iteração
             if (keysToIgnore.includes(key)) { 
                 continue; // Pula a criação deste cabeçalho
             }
@@ -151,14 +154,14 @@ function renderDataInTable(data, elementId) {
         let rowData = "";
         for (const key in item) {
             
-            // ✅ CORREÇÃO AQUI: Se a chave estiver na lista, pula para a próxima iteração
+            // Se a chave estiver na lista, pula para a próxima iteração
             if (keysToIgnore.includes(key)) { 
                 continue; // Pula a criação desta célula
             }
             
             let value = item[key];
             
-            // Tratamento especial para objetos (mantido para segurança, mas a lista já deve filtrar)
+            // Tratamento especial para objetos
             if (typeof value === 'object' && value !== null) {
                 rowData += `<td>[Object]</td>`; 
             } else if (value === null || value === undefined) {
@@ -212,7 +215,7 @@ async function fetchProtected(url, method, body = null) {
     ) {
         outputElement.innerHTML = `
             <div class="error-box" style="font-weight: normal;">
-                🛑 ERRO DE AUTORIZAÇÃO: Faça o login primeiro para obter o token.
+                ERRO DE AUTORIZAÇÃO: Faça o login primeiro para obter o token.
             </div>
         `;
         return null;
@@ -237,7 +240,7 @@ async function fetchProtected(url, method, body = null) {
         if (response.status === 204) {
             outputElement.innerHTML = `
                 <div class="success-box">
-                    ✅ Status: 204 No Content. Operação de exclusão bem-sucedida.
+                    Status: 204 No Content. Operação de exclusão bem-sucedida.
                 </div>
             `;
             return { success: true, status: 204 };
@@ -265,7 +268,7 @@ async function fetchProtected(url, method, body = null) {
         // Tratamento de Erro de Rede
         outputElement.innerHTML = `
             <div class="error-box">
-                🛑 ERRO DE REDE/SERVIDOR: ${error.message}
+                ERRO DE REDE/SERVIDOR: ${error.message}
             </div>
         `;
         return null;
@@ -285,7 +288,8 @@ async function registerUser() {
     const data = await fetchProtected(`${BASE_URL}/auth/register`, "POST", { email, password });
 
     if (data && data.id) {
-        renderAuthSuccess(`✅ Usuário <strong>${data.email}</strong> registrado com sucesso! Faça o login.`, "auth-output");
+        // EMOJI REMOVIDO
+        renderAuthSuccess(`Usuário <strong>${data.email}</strong> registrado com sucesso! Faça o login.`, "auth-output");
     }
 }
 
@@ -307,7 +311,8 @@ async function login() {
         document.getElementById("current-token").textContent = CURRENT_TOKEN;
         document.getElementById("current-role").textContent = CURRENT_ROLE;
 
-        renderAuthSuccess(`✅ Login bem-sucedido! Token obtido. Perfil: <strong>${CURRENT_ROLE}</strong>`, "auth-output");
+        // EMOJI REMOVIDO
+        renderAuthSuccess(`Login bem-sucedido! Token obtido. Perfil: <strong>${CURRENT_ROLE}</strong>`, "auth-output");
         alert(`Login bem-sucedido! Perfil: ${CURRENT_ROLE}. Token salvo.`);
     } else {
         // Limpa tokens se a API retornou sucesso (status 200/201) mas sem token válido
