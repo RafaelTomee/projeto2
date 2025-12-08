@@ -3,19 +3,12 @@ import { useAuth } from '../../context/AuthContext';
 
 const INITIAL_QUARTO_STATE = {
     numero: '',
-    tipo: 'Solteiro', // Valor padrão
-    
-    capacidade: 1, // Valor padrão
-    status: 'Disponível', // Valor padrão
+    tipo: 'Solteiro', 
+    capacidade: 1, 
+    status: 'Disponível', 
 };
 
-/**
- * Componente de Formulário para Criação e Edição de Quartos.
- * @param {Object} props.quartoToEdit - Objeto quarto se estiver no modo Edição.
- * @param {Function} props.onSuccess - Callback para recarregar a lista após sucesso.
- */
 function QuartoForm({ quartoToEdit = null, onSuccess }) {
-    // Inicializa o estado com o objeto de edição ou o estado inicial
     const [formData, setFormData] = useState(INITIAL_QUARTO_STATE);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -23,10 +16,8 @@ function QuartoForm({ quartoToEdit = null, onSuccess }) {
 
     const { token, BASE_URL } = useAuth();
 
-    // Sincroniza o estado do formulário quando o quartoToEdit muda
     useEffect(() => {
         if (quartoToEdit) {
-            // Formata o valorDiaria para o estado do formulário (sempre como número)
             setFormData({
                 ...quartoToEdit,
                 valorDiaria: parseFloat(quartoToEdit.valorDiaria) || 0,
@@ -36,7 +27,6 @@ function QuartoForm({ quartoToEdit = null, onSuccess }) {
         }
     }, [quartoToEdit]);
 
-    // Manipulador de Mudança de Input
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -45,14 +35,12 @@ function QuartoForm({ quartoToEdit = null, onSuccess }) {
         });
     };
 
-    // Manipulador de Submissão (POST ou PUT)
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         setMessage(null);
 
-        // Garante que o valorDiaria seja enviado como número, e não como string
         const dataToSend = {
             ...formData,
             valorDiaria: parseFloat(formData.valorDiaria),
@@ -84,10 +72,10 @@ function QuartoForm({ quartoToEdit = null, onSuccess }) {
             setMessage(`Quarto ${isEditing ? 'editado' : 'cadastrado'} com sucesso!`);
             
             if (!isEditing) {
-                setFormData(INITIAL_QUARTO_STATE); // Limpa o formulário
+                setFormData(INITIAL_QUARTO_STATE);
             }
             
-            onSuccess(); // Recarrega a lista
+            onSuccess(); 
 
         } catch (err) {
             setError(err.message || 'Erro de conexão com o servidor.');

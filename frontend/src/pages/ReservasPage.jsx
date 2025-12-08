@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import ReservaForm from '../components/crud/ReservaForm'; // <-- NOVO: Importa o formulário
+import ReservaForm from '../components/crud/ReservaForm'; 
 
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -14,16 +14,14 @@ function ReservasPage() {
     const [error, setError] = useState(null);
     const [deleteMessage, setDeleteMessage] = useState(null);
 
-    // Estado para controle de EDIÇÃO
     const [reservaSelecionada, setReservaSelecionada] = useState(null);
 
     const { token, BASE_URL } = useAuth();
 
-    // 1. Função de Listagem (Read)
     const fetchReservas = async () => {
         setLoading(true);
         setError(null);
-        setReservaSelecionada(null); // Limpa seleção
+        setReservaSelecionada(null); 
 
         try {
             const response = await fetch(`${BASE_URL}/reservas`, {
@@ -43,7 +41,6 @@ function ReservasPage() {
         }
     };
 
-    // 2. Função de Exclusão (Delete)
     const handleDeleteReserva = async (reservaId) => {
         if (!window.confirm(`Tem certeza que deseja cancelar a reserva ${reservaId}?`)) return;
 
@@ -61,7 +58,7 @@ function ReservasPage() {
             }
 
             setDeleteMessage(`Reserva ID ${reservaId} cancelada com sucesso!`);
-            fetchReservas(); // Recarrega a lista
+            fetchReservas();
 
         } catch (err) {
             setDeleteMessage(err.message || 'Erro ao tentar cancelar reserva.');
@@ -74,7 +71,6 @@ function ReservasPage() {
         }
     }, [token]);
 
-    // Função de sucesso para ser passada ao ReservaForm
     const handleFormSuccess = (reservaParaLimpar = null) => {
         setReservaSelecionada(reservaParaLimpar);
         fetchReservas();
@@ -123,8 +119,8 @@ function ReservasPage() {
                                     <td>
                                         R$ {
                                             reserva.valorTotal
-                                                ? parseFloat(reserva.valorTotal).toFixed(2) // Garante que é um número antes de toFixed
-                                                : '0.00' // Use '0.00' em vez de 'N/A' para valores monetários
+                                                ? parseFloat(reserva.valorTotal).toFixed(2) 
+                                                : '0.00' 
                                         }
                                     </td>
                                     <td>

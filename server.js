@@ -45,7 +45,7 @@ sequelize.sync()
         quartoController.runStatusSync();
       }, SYNC_INTERVAL_MS);
       
-      console.log(`Sincronização de status agendada a cada 10 minutos.`); 
+      console.log(`Sincronização de status agendada a cada 10 segundos.`); 
     });
   })
   .catch(err => {

@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext'; 
-import ClienteForm from '../components/crud/ClienteForm'; // <-- NOVO: Importa o formulário
+import ClienteForm from '../components/crud/ClienteForm'; 
 
 function ClientesPage() {
     const [clientes, setClientes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [deleteMessage, setDeleteMessage] = useState(null); // Mensagem de exclusão
-    
-    // Estado para controle de EDIÇÃO
+    const [deleteMessage, setDeleteMessage] = useState(null); 
     const [clienteSelecionado, setClienteSelecionado] = useState(null); 
 
     const { token, BASE_URL } = useAuth();
 
-    // 1. Função de Listagem (Listagem (Read) mantida)
     const fetchClientes = async () => {
         setLoading(true);
         setError(null);
-        setClienteSelecionado(null); // Limpa seleção ao recarregar a lista
-
-        // ... (lógica de fetchClientes aqui, igual à anterior) ...
+        setClienteSelecionado(null); 
         try {
             const response = await fetch(`${BASE_URL}/clientes`, {
                 method: 'GET',
@@ -38,7 +33,6 @@ function ClientesPage() {
         }
     };
     
-    // 2. Função de Exclusão (Delete)
     const handleDeleteCliente = async (clienteId) => {
         if (!window.confirm(`Tem certeza que deseja excluir o cliente com ID ${clienteId}?`)) return;
 
@@ -59,7 +53,6 @@ function ClientesPage() {
 
             setDeleteMessage(`Cliente ID ${clienteId} excluído com sucesso!`);
             
-            // Recarrega a lista após exclusão
             fetchClientes(); 
 
         } catch (err) {
@@ -67,17 +60,13 @@ function ClientesPage() {
         }
     };
 
-
-    // Roda a função de busca na montagem do componente
     useEffect(() => {
         if (token) {
             fetchClientes();
         }
     }, [token]); 
 
-    // Função de sucesso para ser passada ao ClienteForm
     const handleFormSuccess = (clienteParaLimpar = null) => {
-        // Limpa a seleção e recarrega a lista (o form fará a mensagem de sucesso)
         setClienteSelecionado(clienteParaLimpar); 
         fetchClientes();
     };

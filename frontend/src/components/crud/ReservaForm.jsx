@@ -6,33 +6,27 @@ const INITIAL_RESERVA_STATE = {
     quartoId: '',
     dataCheckIn: '',
     dataCheckOut: '',
-    // Valor total e status são geralmente calculados ou definidos pelo backend
 };
 
-/**
- * Componente de Formulário para Criação e Edição de Reservas.
- */
+
 function ReservaForm({ reservaToEdit = null, onSuccess }) {
     const [formData, setFormData] = useState(INITIAL_RESERVA_STATE);
-    const [clientes, setClientes] = useState([]); // Lista para o dropdown
-    const [quartos, setQuartos] = useState([]);   // Lista para o dropdown
+    const [clientes, setClientes] = useState([]); 
+    const [quartos, setQuartos] = useState([]);  
 
     const [loading, setLoading] = useState(false);
-    const [dataLoading, setDataLoading] = useState(true); // Carregamento inicial dos dados
+    const [dataLoading, setDataLoading] = useState(true); 
     const [error, setError] = useState(null);
     const [message, setMessage] = useState(null);
 
     const { token, BASE_URL } = useAuth();
 
-    // -----------------------------------------------------------
-    // CARREGAMENTO DE DADOS EXTRAS (CLIENTES E QUARTOS)
-    // -----------------------------------------------------------
+    
     useEffect(() => {
         const fetchDependencies = async () => {
             if (!token) return;
             setDataLoading(true);
 
-            // Busca Clientes e Quartos em paralelo
             try {
                 const [clientesRes, quartosRes] = await Promise.all([
                     fetch(`${BASE_URL}/clientes`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -54,13 +48,8 @@ function ReservaForm({ reservaToEdit = null, onSuccess }) {
         fetchDependencies();
     }, [token]);
 
-
-    // -----------------------------------------------------------
-    // MODO EDIÇÃO (Sincroniza dados da reserva)
-    // -----------------------------------------------------------
     useEffect(() => {
         if (reservaToEdit) {
-            // As datas vêm no formato ISO da API, precisamos do formato YYYY-MM-DD para o input type="date"
             setFormData({
                 ...reservaToEdit,
                 dataCheckIn: reservaToEdit.dataCheckIn ? reservaToEdit.dataCheckIn.split('T')[0] : '',
@@ -71,15 +60,10 @@ function ReservaForm({ reservaToEdit = null, onSuccess }) {
         }
     }, [reservaToEdit]);
 
-
-    // -----------------------------------------------------------
-    // LÓGICA DO FORMULÁRIO
-    // -----------------------------------------------------------
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
             ...formData,
-            // Converte IDs para números inteiros antes de salvar no estado
             [name]: (name === 'clienteId' || name === 'quartoId') ? parseInt(value) : value,
         });
     };
@@ -96,7 +80,6 @@ function ReservaForm({ reservaToEdit = null, onSuccess }) {
             : `${BASE_URL}/reservas`;
         const method = isEditing ? 'PUT' : 'POST';
 
-        // Garante que os IDs sejam enviados como números
         const dataToSend = {
             ...formData,
             clienteId: parseInt(formData.clienteId),
@@ -161,7 +144,7 @@ function ReservaForm({ reservaToEdit = null, onSuccess }) {
                     {quartos.map(q => (
                         <option key={q.id} value={q.id}>
                             Nº {q.numero} - {q.tipo} (R$ {q.valorDiaria
-                                ? parseFloat(q.valorDiaria).toFixed(2) // CORREÇÃO AQUI
+                                ? parseFloat(q.valorDiaria).toFixed(2) 
                                 : '0.00'})
                         </option>
                     ))}

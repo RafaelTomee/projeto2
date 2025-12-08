@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext'; 
-import QuartoForm from '../components/crud/QuartoForm'; // <-- NOVO: Importa o formulário
+import QuartoForm from '../components/crud/QuartoForm';
 
 function QuartosPage() {
     const [quartos, setQuartos] = useState([]);
@@ -8,16 +8,14 @@ function QuartosPage() {
     const [error, setError] = useState(null);
     const [deleteMessage, setDeleteMessage] = useState(null);
     
-    // Estado para controle de EDIÇÃO
     const [quartoSelecionado, setQuartoSelecionado] = useState(null); 
 
     const { token, BASE_URL } = useAuth();
 
-    // 1. Função de Listagem (Read)
     const fetchQuartos = async () => {
         setLoading(true);
         setError(null);
-        setQuartoSelecionado(null); // Limpa seleção ao recarregar a lista
+        setQuartoSelecionado(null); 
 
         try {
             const response = await fetch(`${BASE_URL}/quartos`, {
@@ -37,7 +35,6 @@ function QuartosPage() {
         }
     };
     
-    // 2. Função de Exclusão (Delete)
     const handleDeleteQuarto = async (quartoId) => {
         if (!window.confirm(`Tem certeza que deseja excluir o quarto ${quartoId}? Esta ação é irreversível.`)) return;
 
@@ -55,21 +52,18 @@ function QuartosPage() {
             }
 
             setDeleteMessage(`Quarto ID ${quartoId} excluído com sucesso!`);
-            fetchQuartos(); // Recarrega a lista após exclusão
+            fetchQuartos(); 
 
         } catch (err) {
             setDeleteMessage(err.message || 'Erro ao tentar excluir.');
         }
     };
-
-    // Roda a função de busca na montagem do componente
     useEffect(() => {
         if (token) {
             fetchQuartos();
         }
     }, [token]); 
 
-    // Função de sucesso para ser passada ao QuartoForm
     const handleFormSuccess = (quartoParaLimpar = null) => {
         setQuartoSelecionado(quartoParaLimpar); 
         fetchQuartos();

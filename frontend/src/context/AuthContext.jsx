@@ -3,15 +3,12 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    // Inicializa o estado lendo do LocalStorage
     const [token, setToken] = useState(localStorage.getItem('jwtToken') || null);
     const [role, setRole] = useState(localStorage.getItem('userRole') || null);
     const [isAuthenticated, setIsAuthenticated] = useState(!!token);
 
-    // URL base da sua API
     const BASE_URL = "http://localhost:3000/api"; 
 
-    // Efeito para sincronizar o estado com o LocalStorage
     useEffect(() => {
         setIsAuthenticated(!!token);
         if (token) {

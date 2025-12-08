@@ -3,31 +3,26 @@ import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 function Header() {
-    // Pega o estado e a função do contexto
     const { isAuthenticated, role, logout } = useAuth(); 
 
-    // O useNavigate seria necessário aqui, mas vamos usar a função direta por enquanto
 
-    // Estilos inline básicos para simular o visual de cabeçalho
     const headerStyle = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '15px 20px',
-        backgroundColor: '#1F271B', // Deep Green (da sua paleta)
+        backgroundColor: '#1F271B', 
         color: 'white',
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
         marginBottom: '20px'
     };
     
-    // Estilo para links ativos (o NavLink adiciona a classe active, mas usaremos estilo inline)
     const activeLinkStyle = {
         fontWeight: 'bold',
-        color: '#F4D35E', // Gold/Accent
+        color: '#F4D35E', 
         textDecoration: 'underline'
     };
     
-    // Estilo padrão para links
     const linkStyle = {
         color: 'white',
         textDecoration: 'none',
@@ -85,7 +80,7 @@ function Header() {
                         </button>
                     </>
                 ) : (
-                    // Se não estiver autenticado, mostra apenas o link de Login
+                    
                     <NavLink 
                         to="/login" 
                         style={({ isActive }) => ({ ...linkStyle, ...(isActive ? activeLinkStyle : {}) })}

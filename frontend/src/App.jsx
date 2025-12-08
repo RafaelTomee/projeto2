@@ -3,7 +3,7 @@ import Login from './components/auth/Login';
 import PrivateRoute from './components/auth/PrivateRoute'; 
 import ClientesPage from './pages/ClientesPage';
 import QuartosPage from './pages/QuartosPage';
-import ReservasPage from './pages/ReservasPage'; // <-- NOVO: Importa a página de Reservas
+import ReservasPage from './pages/ReservasPage'; 
 import Header from './components/nav/Header'; 
 
 function App() {
@@ -25,7 +25,7 @@ function App() {
         />
         <Route 
           path="/reservas" 
-          element={<PrivateRoute element={<ReservasPage />} />} // <-- ATUALIZADO
+          element={<PrivateRoute element={<ReservasPage />} />} 
         />
         
         <Route path="/" element={<Navigate to="/clientes" replace />} /> 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext.jsx'; // Volta duas pastas para 'context'
+import { useAuth } from '../../context/AuthContext.jsx'; 
 
 function Login() {
     const { login, BASE_URL } = useAuth(); 
@@ -29,12 +29,10 @@ function Login() {
                 throw new Error(data.message || "Falha no login. Credenciais inválidas.");
             }
             
-            // Assume que a API retorna o token e, opcionalmente, o perfil
             const userRole = data.user && data.user.role ? data.user.role : 'recepcionista';
             login(data.token, userRole);
             
             setSuccessMessage("Login bem-sucedido! Redirecionando...");
-            // O sistema de rotas (App.jsx) cuidará do redirecionamento após o login
             
         } catch (err) {
             setError(err.message || "Erro desconhecido ao tentar logar.");
